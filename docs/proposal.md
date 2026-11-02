@@ -12,23 +12,21 @@ Event planning for individuals, with an AI co-organizer.
 
 ### Major user journeys
 
-- **As a member**, I log in, see my upcoming events and groups on my home page, browse events and groups, join or leave them, and can create my own events or groups (which makes me an organizer).
+- **As a member**, I log in, see my upcoming events and groups on my home page, browse events and groups, join or leave them (which makes me an attendee), and can create my own events or groups (which makes me an organizer).
 - **As an attendee**, I open an event I joined, see its details and my status (going, pending or waitlist), and chat with the other attendees.
-- **As an organizer**, I create an event or group, choose who can see and join it, accept or decline requests, and use the AI to plan things like teams or rooms.
-- **As a site admin**, I remove spam events or groups.
+- **As an organizer**, I create an event or group, choose how people can join it, and use the AI to plan things like teams or rooms.
+- **As a site admin**, I remove spam events or groups. After x months of inactivity groups are deleted automatically. 
 
 ### Core features (MVP)
 
 1. **Accounts**: sign up and log in with email, password and username.
 2. **Home page**: events I organize, events I'm attending, and my groups.
-3. **Create events and groups**: public or group-only, open or approval-based joining, a spot limit with a waitlist, and an event page with an attendee-only chat.
+3. **Create events and groups**: public or group-only events, a spot limit with a waitlist, and an event page with an attendee-only chat.
 4. **Discover**: suggested events and groups, plus search with filters (group, date, location, category).
-
-**Later (not MVP):** Splitwise-style expense splitting, full messaging (group chats, direct messages).
 
 ### AI feature
 
-The AI runs on our server through OpenRouter and works with the attendees' sign-up answers. We have three options in mind and will pick one in Sprint 1:
+The AI runs on our server through OpenRouter and works with the attendees' sign-up answers. We have three options in mind and will pick one:
 
 - **a) Organizer chat:** the organizer asks, e.g., "form two teams with equal skill levels", and the AI returns the teams as a draft the organizer can edit.
 - **b) Automatic:** once sign-ups close, the AI forms teams or rooms on its own and shows the organizer a draft to approve.
