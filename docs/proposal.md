@@ -30,8 +30,6 @@ Plan and run events with ease (pickup games, cohort trips, dinners, club outings
 
 **Later (not MVP):** Splitwise-style expense splitting (who paid what, who owes whom), full messaging (group chats, direct messages), a discussion thread that updates live without page reloads.
 
-**We skip:** in-app payments, bookings (hotels, courts), maps, push notifications, a native app.
-
 ### AI feature
 
 The organizer types a request into an "Ask AI" box on the event page. The server sends the request plus the attendees' sign-up answers to an LLM through OpenRouter. The LLM returns structured JSON that becomes a **draft section**: balanced teams, the budget most people chose, destination ideas that fit the group's preferences, a summary of dietary restrictions, and so on. The organizer keeps, edits or discards it before publishing. When the draft is a grouping, the app checks that every attendee appears exactly once before showing it; if the check fails, it shows an error and offers to try again.
@@ -59,8 +57,6 @@ Type where you need to go and get the right Yale shuttle, stop and time, with no
 4. **Saved trips and alerts**: saved trips, plus email alerts when an admin posts a disruption on a saved line.
 5. **AI trip request** (see below).
 
-**We skip:** live bus positions and ETAs (no documented public API; stretch goal only with Yale Transit's permission), map tiles and turn-by-turn walking directions, address geocoding, the night "to-door" service, Safe Ride booking, a native app.
-
 ### AI feature
 
 The user types a free-text request ("I'm at Evans and need to catch the 5:40 train at Union Station"). The LLM returns JSON: start place, destination place, and an arrive-by or leave-at time. Our planner then computes the trip from the database; the LLM never invents routes. If it can't match a place, the app asks the user to pick from the list.
@@ -87,8 +83,6 @@ Every Yale event in one place (SOM, the other schools, the College and Bulldogs 
 3. **Accounts**: interests, saved events, and an ICS export of saved events.
 4. **Weekly email digest.**
 5. **AI tagging and personal picks** (see below).
-
-**We skip:** creating events in our app (we only aggregate), RSVPs and tickets, maps, scraping sites without feeds, members-only events, push notifications.
 
 ### AI feature
 
