@@ -8,7 +8,7 @@
 
 ### Tagline
 
-Event planning for Yale groups, with an AI co-organizer.
+Event planning for individuals, with an AI co-organizer.
 
 ### Major user journeys
 
