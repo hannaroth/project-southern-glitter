@@ -8,31 +8,31 @@
 
 ### Tagline
 
-Plan and run events with ease (pickup games, cohort trips, dinners, club outings), public or just for your groups, with an AI co-organizer that turns sign-up answers into balanced teams, preferred budgets, destinations and more.
+Event planning for Yale groups, with an AI co-organizer.
 
 ### Major user journeys
 
-- **As an organizer**, I log in, create a group such as "SOM Cohort GBS" or "East Rock Baddies". People can find it by searching in the app or through a link I share. I choose whether the group is **open** (anyone can join right away) or **approval required** (people stay pending until I accept them).
-- **As an organizer**, I create an event (title, date, place, max attendees), choose whether it is public or visible to one of my groups only, choose whether RSVPs are **open** or **approval required** (for group and public events alike), and add sign-up questions such as "Skill level?", "Budget?" or "Who do you want to room with?".
-- **As a member**, I find groups and events by searching and browsing in the app or through a shared link. I join groups, RSVP to events and answer the sign-up questions. If a group or event requires approval, I stay pending until the organizer accepts me. Group-only events are visible only to that group's members. If an event is full, I join the waitlist. When someone cancels, the first person on the waitlist moves up automatically and gets an email.
-- **As an organizer**, I see a list of pending requests for my groups and events, with each person's sign-up answers, and accept or decline them.
-- **As an organizer**, I build the event page from my own sections (e.g. "Schedule", "What to bring"). When I want help, I ask the AI co-organizer ("split everyone into 2 even teams", "what budget works for most people?", "suggest 3 destinations that fit the group"), then edit its draft section and publish it.
-- **As an attendee**, I read the event page and post in the event's discussion thread, which only attendees can see.
+- **As a member**, I log in, see my upcoming events and groups on my home page, browse events and groups, join or leave them, and can create my own events or groups (which makes me an organizer).
+- **As an attendee**, I open an event I joined, see its details and my status (going, pending or waitlist), and chat with the other attendees.
+- **As an organizer**, I create an event or group, choose who can see and join it, accept or decline requests, and use the AI to plan things like teams or rooms.
 - **As a site admin**, I remove spam events or groups.
 
 ### Core features (MVP)
 
-1. **Accounts and groups**: sign-up and login with the framework's built-in authentication; groups that people find by search or a shared link; the owner sets each group to open joining or approval required; owner and member roles.
-2. **Events and visibility**: create, edit, browse and search events (date, place, cap, custom sign-up questions); each event is public or for one group only, and its RSVPs are open or approval required.
-3. **RSVP, approval and waitlist**: RSVP with answers to the sign-up questions; on approval-required events, RSVPs stay pending until the organizer accepts or declines them; a hard cap with automatic waitlist promotion on cancellation. Only accepted attendees count toward the cap. When two people grab the last spot at once, a database transaction decides who gets it.
-4. **Event page and discussion**: a free-form page of sections the organizer creates and edits, plus an attendee-only discussion thread with pinned announcements. The thread is the basis for fuller messaging later.
-5. **Email notifications**: an email when a waitlist spot opens, and a reminder before the event (scheduled job).
+1. **Accounts**: sign up and log in with email, password and username.
+2. **Home page**: events I organize, events I'm attending, and my groups.
+3. **Create events and groups**: public or group-only, open or approval-based joining, a spot limit with a waitlist, and an event page with an attendee-only chat.
+4. **Discover**: suggested events and groups, plus search with filters (group, date, location, category).
 
-**Later (not MVP):** Splitwise-style expense splitting (who paid what, who owes whom), full messaging (group chats, direct messages), a discussion thread that updates live without page reloads.
+**Later (not MVP):** Splitwise-style expense splitting, full messaging (group chats, direct messages).
 
 ### AI feature
 
-The organizer types a request into an "Ask AI" box on the event page. The server sends the request plus the attendees' sign-up answers to an LLM through OpenRouter. The LLM returns structured JSON that becomes a **draft section**: balanced teams, the budget most people chose, destination ideas that fit the group's preferences, a summary of dietary restrictions, and so on. The organizer keeps, edits or discards it before publishing. When the draft is a grouping, the app checks that every attendee appears exactly once before showing it; if the check fails, it shows an error and offers to try again.
+The AI runs on our server through OpenRouter and works with the attendees' sign-up answers. We have three options in mind and will pick one in Sprint 1:
+
+- **a) Organizer chat:** the organizer asks, e.g., "form two teams with equal skill levels", and the AI returns the teams as a draft the organizer can edit.
+- **b) Automatic:** once sign-ups close, the AI forms teams or rooms on its own and shows the organizer a draft to approve.
+- **c) Create by chat:** the organizer describes the event ("3-day Montreal trip for 20, mid budget") and the AI fills in the event page, like setting up a Notion page by talking to Claude.
 
 ---
 
