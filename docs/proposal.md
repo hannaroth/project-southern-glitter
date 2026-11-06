@@ -4,6 +4,32 @@
 
 ---
 
+## New Idea 1: Running dinner for New Haven
+
+### Tagline
+
+Team up with a friend, host one course, and eat the other two at other students' homes.
+
+### Major user journeys
+
+- **As an admin**, I log in, create a dinner (date, course times, theme, after-party, team cap), run the matching when sign-ups close and publish the plan. If a team drops out, a waitlisted team takes its place.
+- **As an interested participant**, I pick an upcoming dinner ("Around the World, Sat Nov 14") and fill out the sign-up form for a team of two, with no password: both our emails, our address, dietary restrictions and the course we'd like to host. If it's full, we join the waitlist.
+- **As a participant**, I sign in with my email, see which course we host and our guests' dietary restrictions, and ask the AI for a menu that works for everyone. On the night, the same page shows my evening stop by stop on an integrated map; each next address appears shortly before that course.
+
+### Core features (MVP)
+
+1. **Logins**: admins log in with a password (the framework's built-in authentication) to create and run dinners. Participants use only their email, with no password: to sign in, they enter it and click a one-time link we email them. Both partners can sign in to their team's page.
+2. **Dinners**: create, edit and browse dinners, with a team cap and a waitlist.
+3. **AI matching**: when sign-ups close, the LLM proposes which team hosts which course and where everyone eats, keeping routes short and honoring the sign-up preferences where it can. It sees only team numbers, preferences and the distances between addresses that our code computes, never names or addresses. Our code then checks the rules (each team hosts once, three teams per table, no two teams meet twice) and rejects a plan that breaks one; after a few failed tries it falls back to a valid plan from our own algorithm. It needs a multiple of 3 teams (at least 9).
+4. **My Dinner and address reveal**: each team's stops on an integrated map (Leaflet with OpenStreetMap; each address is geocoded once at sign-up). An address is visible only to the teams eating there, and only shortly before that course.
+5. **AI menu helper** (see below).
+
+### AI feature
+
+The LLM runs on our server through OpenRouter and does two jobs: it proposes the matching (feature 3) and suggests menus. On their host page, a team clicks "Suggest a menu". The server sends the course, the theme, the number of guests and their dietary restrictions (no names or addresses) to the LLM. It returns JSON: three dishes, each with ingredients and the restrictions it meets, plus a shopping list. The app shows only dishes that meet every guest's restrictions and keeps the restrictions on screen, so hosts still double-check allergies.
+
+---
+
 ## Idea 1: Event organizer with an AI co-organizer
 
 ### Tagline
