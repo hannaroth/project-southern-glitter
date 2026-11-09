@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team southern-glitter</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; }
+    button { font-size: 1.25rem; padding: 0.5rem 1.5rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Team southern-glitter</h1>
+  <ul>
+    {% for nickname in nicknames %}<li>{{ nickname }}</li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="{% url 'abtest:page' %}">
+    <button id="abtest" type="submit">{{ variant }}</button>
+  </form>
+</body>
+</html>
