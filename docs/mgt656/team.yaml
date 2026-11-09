@@ -1,0 +1,9 @@
+framework: django        # django | rails | laravel | phoenix | adonisjs
+database: postgres       # postgres | mysql
+members:
+  - nickname: magnificent-aardvark   # Nicola
+    github: nicode656
+  - nickname: stormy-zebra           # Hanna
+    github: hannaroth
+  - nickname: delightful-crocodile   # Jason
+    github: kawaiibunny202
