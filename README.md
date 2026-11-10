@@ -55,7 +55,7 @@ python manage.py seed
 
 It is safe to run again. On a re-run it creates no duplicates: accounts are found by email and dinners by title. Each account's password and role flags are reset to the seeded values (a password is only rewritten if it differs), so staging always matches what the graders were told. A dinner dated today or later keeps its date; one whose date has passed is moved to a new upcoming Saturday (the first is the next Saturday at least 7 days away, the others 14 and 28 days after it).
 
-On staging, run it by hand after every database reset: set the two variables on Render and run `python manage.py seed` in the Render shell. It is deliberately not part of `build.sh`.
+On staging, set the two variables on Render. `build.sh` then runs the seed on every deploy (Render's free plan has no shell to run it by hand), so after a database reset a redeploy brings the demo data back. Without the two variables, `build.sh` skips the seed.
 
 ## Environment variables
 
