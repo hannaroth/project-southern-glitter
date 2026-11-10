@@ -46,7 +46,13 @@ Team southern-glitter (Yale MGT 656) is building a running-dinner web app for Ya
 
 ## Commands
 
-The base app pull request fills this in: how to install, run the server, run the tests, run migrations and seed.
+Run from the repo root with a virtualenv active and `DATABASE_URL` pointing at a Postgres database (see `README.md` and `.env.example`; load a local `.env` with `set -a; source .env; set +a`).
+
+- Install: `pip install -r requirements.txt`
+- Run the server: `DEBUG=true python manage.py runserver`
+- Run the tests: `DEBUG=true python manage.py test` (the database user must be allowed to create the `test_` database)
+- Migrations: `python manage.py makemigrations` to create, `python manage.py migrate` to apply, `python manage.py makemigrations --check` to confirm nothing is missing
+- Seed: `python manage.py seed` arrives with issue #6
 
 ## Course documents (graded on `main`)
 
