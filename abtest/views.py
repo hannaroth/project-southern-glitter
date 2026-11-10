@@ -44,7 +44,7 @@ def _read_visitor(request):
     return visitor_id, variant
 
 
-def _set_visitor_cookie(response, visitor_id, variant):
+def _set_visitor_cookie(request, response, visitor_id, variant):
     response.set_signed_cookie(
         COOKIE_NAME,
         f"{visitor_id}:{variant}",
@@ -52,13 +52,15 @@ def _set_visitor_cookie(response, visitor_id, variant):
         max_age=COOKIE_MAX_AGE,
         httponly=True,
         samesite="Lax",
+        secure=request.is_secure(),
     )
 
 
 # csrf_exempt: the click form posts to the same page and only ever records one
 # click for the visitor in the signed cookie, so a forged post can do no harm.
-# Exempting it also avoids CSRF origin failures behind Render's HTTPS proxy,
-# which would silently lose the bot's clicks during the graded run.
+# Settings already trust Render's HTTPS proxy, but if a new domain is added
+# without updating CSRF_TRUSTED_ORIGINS, CSRF would silently reject the
+# grading bot's clicks. Exempting this one view removes that failure mode.
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def ab_page(request):
@@ -90,7 +92,7 @@ def ab_page(request):
         {"variant": variant, "nicknames": TEAM_NICKNAMES},
     )
     if is_new:
-        _set_visitor_cookie(response, visitor_id, variant)
+        _set_visitor_cookie(request, response, visitor_id, variant)
     return response
 
 
