@@ -64,6 +64,10 @@ class SignUpTests(TestCase):
         self.assertFalse(user.is_superuser)
         self.assertEqual(self.client.session["_auth_user_id"], str(user.pk))
 
+    def test_signup_stores_email_lowercase(self):
+        self.client.post("/signup/", {**self.data, "email": "Ada@Example.com"})
+        self.assertTrue(User.objects.filter(email="ada@example.com").exists())
+
     def test_duplicate_email_rejected(self):
         User.objects.create_user("ada@example.com", PASSWORD)
         response = self.client.post("/signup/", {**self.data, "email": "ADA@example.com"})
@@ -96,6 +100,10 @@ class LoginLogoutTests(TestCase):
         response = self.client.post("/login/", {"username": "grace@example.com", "password": PASSWORD})
         self.assertRedirects(response, "/")
         self.assertEqual(self.client.session["_auth_user_id"], str(self.user.pk))
+
+    def test_login_ignores_capitals_in_email(self):
+        response = self.client.post("/login/", {"username": "Grace@Example.com", "password": PASSWORD})
+        self.assertRedirects(response, "/")
 
     def test_login_with_wrong_password(self):
         response = self.client.post("/login/", {"username": "grace@example.com", "password": "wrong-pass"})

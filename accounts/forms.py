@@ -13,7 +13,8 @@ class SignUpForm(UserCreationForm):
         fields = ("first_name", "last_name", "email")
 
     def clean_email(self):
-        email = User.objects.normalize_email(self.cleaned_data["email"]).strip()
+        # Emails are stored lowercase so that log-in does not depend on capitals.
+        email = self.cleaned_data["email"].strip().lower()
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
@@ -25,3 +26,6 @@ class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         label="Email", widget=forms.EmailInput(attrs={"autofocus": True, "autocomplete": "email"})
     )
+
+    def clean_username(self):
+        return self.cleaned_data["username"].strip().lower()
