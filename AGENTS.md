@@ -52,6 +52,7 @@ Run from the repo root with a virtualenv active and `DATABASE_URL` pointing at a
 - Run the server: `DEBUG=true python manage.py runserver`
 - Run the tests: `DEBUG=true python manage.py test` (the database user must be allowed to create the `test_` database)
 - Migrations: `python manage.py makemigrations` to create, `python manage.py migrate` to apply, `python manage.py makemigrations --check` to confirm nothing is missing
+- Lint: `ruff check .` (rules in `ruff.toml`). CI runs the lint, the migrations check and the tests on every pull request; a pull request must pass the **tests** check before merging.
 - Seed: `python manage.py seed` arrives with issue #6
 
 ## Course documents (graded on `main`)
