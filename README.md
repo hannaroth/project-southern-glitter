@@ -35,7 +35,27 @@ Open http://localhost:8000. Sign up at `/signup/`, log in at `/login/`. Admins (
 | Check for missing migrations | `python manage.py makemigrations --check` |
 | Production-style check | `python manage.py check --deploy` |
 
-The tests need a PostgreSQL database in `DATABASE_URL` whose user may create databases (Django creates and drops `test_<name>`). Run them with `DEBUG=true` (or a `SECRET_KEY`) set. `python manage.py seed` (demo data and grader accounts) arrives with issue #6.
+The tests need a PostgreSQL database in `DATABASE_URL` whose user may create databases (Django creates and drops `test_<name>`). Run them with `DEBUG=true` (or a `SECRET_KEY`) set.
+
+## Seed data and grader accounts
+
+`python manage.py seed` creates two accounts and three upcoming demo dinners ("Around the World", "Through the Eras", "No Theme, Just Dinner"):
+
+| Account | Role |
+|---|---|
+| `admin@example.com` (Ada Admin) | admin: `is_staff` and `is_superuser`, can open `/admin/` |
+| `member@example.com` (Max Member) | participant |
+
+The passwords come from the environment, never from the repo: set `SEED_ADMIN_PASSWORD` and `SEED_MEMBER_PASSWORD` first (names are in `.env.example`). If either is missing or empty, the command stops with an error and creates nothing. It never prints the passwords.
+
+```bash
+export SEED_ADMIN_PASSWORD='<choose-one>' SEED_MEMBER_PASSWORD='<choose-another>'
+python manage.py seed
+```
+
+It is safe to run again. On a re-run it creates no duplicates: accounts are found by email and dinners by title. Each account's password and role flags are reset to the seeded values (a password is only rewritten if it differs), so staging always matches what the graders were told. A dinner dated today or later keeps its date; one whose date has passed is moved to a new upcoming Saturday (the first is the next Saturday at least 7 days away, the others 14 and 28 days after it).
+
+On staging, run it by hand after every database reset: set the two variables on Render and run `python manage.py seed` in the Render shell. It is deliberately not part of `build.sh`.
 
 ## Environment variables
 
@@ -49,6 +69,8 @@ Names are listed in `.env.example`; never commit values.
 | `ALLOWED_HOSTS` | Comma-separated host names |
 | `CSRF_TRUSTED_ORIGINS` | Optional, comma-separated, e.g. `https://example.com` |
 | `PORT` | Port to listen on (set by Render) |
+| `SEED_ADMIN_PASSWORD` | Password for `admin@example.com`; only read by `seed` |
+| `SEED_MEMBER_PASSWORD` | Password for `member@example.com`; only read by `seed` |
 
 On Render, `RENDER_EXTERNAL_HOSTNAME` is added to the allowed hosts and trusted origins automatically.
 
