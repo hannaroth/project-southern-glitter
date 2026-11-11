@@ -2,26 +2,20 @@
 
 **Sprint goal:** a running-dinner app on staging with accounts, a Postgres database, demo data from a seed command, a list of upcoming dinners, and a working A/B test page.
 
-**Status:** TODO (one line: on track / what slipped)
-
-<!-- Kyle said in class on Nov 9 that he will add detail to this format; he mentioned project status,
-this week's work, stories closed last week and a burn-up or burndown chart. Check the project page before
-submitting. The GitHub Project's Insights tab has a burn-up chart: save a screenshot to img/ and link it here. -->
-![Burn-up chart](img/sprint-1-burnup.png)
+**Status:** On track — all six Sprint 1 stories are merged and live on staging.
 
 ## What shipped
 
-<!-- One line per closed issue, with its merged pull request. -->
-- A/B test page at `/c6a680e`: #TODO, PR #TODO
-- A/B stats at `/c6a680e/stats`: #TODO, PR #TODO
-- Base app: sign up, log in and log out, with roles: #TODO, PR #TODO
-- Seed command for demo data and grader accounts: #TODO, PR #TODO
-- Upcoming dinners on the home page: #TODO, PR #TODO
-- Staging on Render with a Neon Postgres database: #TODO, PR #TODO
+- A/B test page at `/c6a680e`: #3, PR #35
+- A/B stats at `/c6a680e/stats`: #4, PR #35
+- Base app: sign up, log in and log out, with roles: #5, PR #36
+- Seed command for demo data and grader accounts: #6, PR #38
+- Upcoming dinners on the home page: #7, PR #37
+- Staging on Render with a Neon Postgres database: #8 (set up directly on Render; no pull request)
 
 ## What works on staging now
 
-Staging: TODO-URL
+Staging: https://running-dinner-staging.onrender.com
 
 - Visitors see upcoming dinners on the home page.
 - Students can sign up, log in and log out; the seeded admin can open the admin area.
@@ -29,10 +23,10 @@ Staging: TODO-URL
 
 ## Working with our agents
 
-<!-- One concrete thing that worked or didn't, and what we changed. Example shape:
-"The agent first put the A/B route at /c6a680e/, so Django redirected /c6a680e with a 301. We added
-'GET /c6a680e returns 200 with no redirect' to the acceptance criteria and a test for it." -->
-TODO
+<!-- One concrete thing per person: what worked or didn't, and what you changed. -->
+- **Nicola:** the agent's first pass on the base app treated `Ada@Example.com` and `ada@example.com` as two different logins. We caught it reviewing the pull request, had it store emails lowercase, and added two tests so it can't regress.
+- **Jason:** Rather than trusting that tests passed on the author's laptop, my agent re-ran every pull request on a fresh copy of the code. That caught two admin tests that only pass after `collectstatic` has been run, so our CI workflow runs that step before the tests, and we noted the proper fix on #37 and #38.
+- **Hanna:** Before the base app existed, our agent set up Render on assumptions (module `config`, gunicorn, WhiteNoise, env vars, proxy SSL/CSRF settings). We wrote those assumptions as a checklist into issue #5, Nicola's agent built against it, and staging deployed on the first merge. Lesson: put setup requirements into the issue the agent reads, not just into chat.
 
 ## Backlog changes for Sprint 2
 

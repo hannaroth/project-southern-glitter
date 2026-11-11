@@ -4,7 +4,7 @@ Team southern-glitter (Yale MGT 656) is building a running-dinner web app for Ya
 
 ## Read first
 
-- The course's project requirements, which are the grading rules: https://www.656.mba/#/assignments/project-final-submission
+- The course's project requirements and grading rubric, now a dedicated repo (added Nov 11): https://github.com/yale-mgt-656-fall-2026/project-requirements. It covers the app features, the `docs/mgt656/` layout, the A/B test, the sprint report format, and grading. It explicitly rules out burndown charts or story points.
 - `docs/backlog.md`: every user story with its acceptance criteria. The GitHub issues are created from it.
 - `docs/proposal.md`: the approved idea ("New Idea 1: Running dinner for New Haven").
 - `docs/decisions.md`: what the team decided and what Kyle told us, with dates. Follow it; if your issue conflicts with it, ask.
