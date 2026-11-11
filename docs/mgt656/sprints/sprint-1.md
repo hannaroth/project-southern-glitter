@@ -4,12 +4,6 @@
 
 **Status:** On track. All six Sprint 1 user stories are merged and live on staging. Tests on every pull request (#9, stretch) is open for review but not required for the sprint goal.
 
-<!-- Kyle said in class on Nov 9 that he will add detail to this format; he mentioned project status,
-this week's work, stories closed last week and a burn-up or burndown chart. Check the project page before
-submitting. The GitHub Project's Insights tab has a burn-up chart: save a screenshot to img/ and link it here. -->
-<!-- TODO: screenshot the burn-up chart from the Project's Insights tab and save it to img/sprint-1-burnup.png -->
-![Burn-up chart](img/sprint-1-burnup.png)
-
 ## What shipped
 
 <!-- One line per closed issue, with its merged pull request. -->
