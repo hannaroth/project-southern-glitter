@@ -34,6 +34,9 @@ Open http://localhost:8000. Sign up at `/signup/`, log in at `/login/`. Admins (
 | Create or apply migrations | `python manage.py makemigrations` / `python manage.py migrate` |
 | Check for missing migrations | `python manage.py makemigrations --check` |
 | Production-style check | `python manage.py check --deploy` |
+| Lint (same as CI) | `pip install ruff` then `ruff check .` |
+
+Every pull request into `main` runs the linter, the missing-migrations check and the whole test suite on GitHub Actions against a throwaway Postgres (`.github/workflows/tests.yml`). The result shows as the **tests** check on the pull request.
 
 The tests need a PostgreSQL database in `DATABASE_URL` whose user may create databases (Django creates and drops `test_<name>`). Run them with `DEBUG=true` (or a `SECRET_KEY`) set.
 
