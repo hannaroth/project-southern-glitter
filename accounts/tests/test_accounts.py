@@ -197,9 +197,10 @@ class RoutingTests(TestCase):
         self.assertEqual(reverse("logout"), "/logout/")
 
     def test_root_urlconf_does_not_redirect_slashless_paths(self):
-        # The A/B page lives at /c6a680e with no trailing slash and must never be redirected.
-        # With nothing mounted there yet it is a plain 404, not a 301 to /c6a680e/.
-        self.assertEqual(self.client.get("/c6a680e").status_code, 404)
+        # The A/B page lives at /c6a680e with no trailing slash and must never be redirected
+        # (no 301 to /c6a680e/). The abtest app now serves it, so it answers 200 directly.
+        self.assertEqual(self.client.get("/c6a680e").status_code, 200)
+        self.assertEqual(self.client.get("/c6a680e/stats").status_code, 200)
 
 
 class SettingsTests(TestCase):
