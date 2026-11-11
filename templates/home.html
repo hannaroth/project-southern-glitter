@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Running Dinner New Haven</h1>
-  <p>Upcoming dinners will appear here.</p>
+  <h1>Upcoming dinners</h1>
+  {% for dinner in dinners %}
+    <article>
+      <header><h2>{{ dinner.title }}</h2></header>
+      <p><strong>{{ dinner.date|date:"D, M j, Y" }}</strong></p>
+      <p>Theme: {{ dinner.theme }}</p>
+      <p>After-party: {{ dinner.after_party_place }}</p>
+    </article>
+  {% empty %}
+    <p>No upcoming dinners yet. Check back soon.</p>
+  {% endfor %}
 {% endblock %}
