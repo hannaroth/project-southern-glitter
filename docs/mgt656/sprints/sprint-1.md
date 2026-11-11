@@ -25,7 +25,7 @@ Staging: https://running-dinner-staging.onrender.com
 
 <!-- One concrete thing per person: what worked or didn't, and what you changed. -->
 - **Nicola:** the agent's first pass on the base app treated `Ada@Example.com` and `ada@example.com` as two different logins. We caught it reviewing the pull request, had it store emails lowercase, and added two tests so it can't regress.
-- **Jason:** TODO
+- **Jason:** Rather than trusting that tests passed on the author's laptop, my agent re-ran every pull request on a fresh copy of the code. That caught two admin tests that only pass after `collectstatic` has been run, so our CI workflow runs that step before the tests, and we noted the proper fix on #37 and #38.
 - **Hanna:** Before the base app existed, our agent set up Render on assumptions (module `config`, gunicorn, WhiteNoise, env vars, proxy SSL/CSRF settings). We wrote those assumptions as a checklist into issue #5, Nicola's agent built against it, and staging deployed on the first merge. Lesson: put setup requirements into the issue the agent reads, not just into chat.
 
 ## Backlog changes for Sprint 2
