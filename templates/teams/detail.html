@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Our team · {{ dinner.title }}{% endblock %}
+{% block content %}
+  <h1>Our team</h1>
+  <p><strong>{{ dinner.title }}</strong> · {{ dinner.date|date:"D, M j, Y" }}</p>
+  <article>
+    <p><strong>Status:</strong> {{ team.get_status_display }}</p>
+    <p><strong>Signed up by:</strong> {{ team.creator.display_name }}</p>
+    <p><strong>Partner:</strong>
+      {% if team.partner %}{{ team.partner.display_name }}{% else %}Not joined yet{% endif %}
+    </p>
+    <p><strong>Address:</strong> {{ team.address }}</p>
+    <p><strong>Dietary restrictions:</strong>
+      {% for label in team.dietary_labels %}{{ label }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}
+    </p>
+    {% if team.dietary_notes %}<p><strong>Other dietary needs:</strong> {{ team.dietary_notes }}</p>{% endif %}
+    <p><strong>Course we'd like to host:</strong> {{ team.get_preferred_course_display }}</p>
+  </article>
+{% endblock %}

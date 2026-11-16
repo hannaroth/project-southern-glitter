@@ -9,4 +9,5 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("", include("dinners.urls")),
     path("", include("accounts.urls")),
+    path("", include("teams.urls")),
 ]
