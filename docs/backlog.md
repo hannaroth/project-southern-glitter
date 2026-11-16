@@ -157,20 +157,32 @@ As a student, I want to send a dinner's link to friends, so that they can join t
 Acceptance criteria:
 - Each dinner has a detail page with a copy-link button; logged-out visitors see it and are asked to log in to join.
 
-### Cancel before the matching
-
-`user story` · Sprint 2
-
-As a team, we want to cancel before the matching, so that another team gets our spot.
-
-Acceptance criteria:
-- Either partner can cancel until sign-ups close; the first waitlisted team moves up.
-
 ### Production environment
 
 `task` · Sprint 2
 
 - A separate Render service and Neon database for production, promoted from staging by a deliberate step (counts toward CD).
+
+### Recipe database
+
+`user story` · Sprint 2 (pulled forward from Sprint 3 on Nov 15)
+
+As a host, I want menu ideas drawn from real recipes, so that I can cook something tested.
+
+Acceptance criteria:
+- A one-time import (re-runnable) of recipes from an open source into Postgres: title, cuisine, category, ingredients, instructions, source link.
+- Candidate source: TheMealDB (cuisines and categories such as Starter, Dessert, Vegetarian and Vegan match our themes and courses). Its free key is for development and education; a public production app needs its £10 supporter key, so ask Kyle.
+
+### AI menu helper
+
+`user story` · Sprint 2, first slice (pulled forward from Sprint 3 on Nov 15)
+
+As a host, I want a menu that suits my guests, so that everyone can eat what we cook.
+
+Acceptance criteria:
+- Our code first selects recipes from our database that fit the course, the theme and the guests' restrictions; the LLM picks three, explains why and writes a shopping list for the group. It cannot suggest a recipe that isn't in our database.
+- The guests' restrictions stay on screen; tests mock the LLM.
+- No chat (decided Nov 15): one click gives three ideas with reasons and a shopping list, plus an optional one-line wish and "Suggest others". Sprint 2 uses the restrictions of all teams signed up for the dinner; the actual guests after matching come in Sprint 3. Details: `docs/sprint-2-plan.md`, section 5.5.
 
 ---
 
@@ -200,25 +212,14 @@ Acceptance criteria:
 - Shows the course we host, our guests' dietary restrictions, and our three stops plus the after-party on a map (Leaflet with OpenStreetMap tiles).
 - An address is visible only to the teams eating there, and only from a set time before that course (e.g. 30 minutes); tests check both rules.
 
-### Recipe database
+### Cancel before the matching
 
-`user story` · Sprint 3
+`user story` · Sprint 3 (moved from Sprint 2 on Nov 15)
 
-As a host, I want menu ideas drawn from real recipes, so that I can cook something tested.
-
-Acceptance criteria:
-- A one-time import (re-runnable) of recipes from an open source into Postgres: title, cuisine, category, ingredients, instructions, source link.
-- Candidate source: TheMealDB (cuisines and categories such as Starter, Dessert, Vegetarian and Vegan match our themes and courses). Its free key is for development and education; a public production app needs its £10 supporter key, so ask Kyle.
-
-### AI menu helper
-
-`user story` · Sprint 3
-
-As a host, I want a menu that suits my guests, so that everyone can eat what we cook.
+As a team, we want to cancel before the matching, so that another team gets our spot.
 
 Acceptance criteria:
-- Our code first selects recipes from our database that fit the course, the theme and the guests' restrictions; the LLM picks three, explains why and writes a shopping list for the group. It cannot suggest a recipe that isn't in our database.
-- The guests' restrictions stay on screen; tests mock the LLM.
+- Either partner can cancel until sign-ups close; the first waitlisted team moves up.
 
 ---
 
