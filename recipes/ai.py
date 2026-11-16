@@ -144,6 +144,10 @@ def suggest_dishes(*, course, theme, restrictions, wish="", exclude_ids=()):
         except OpenRouterError as exc:
             logger.warning("AI dish ideas unavailable: %s", exc)
             return _fallback(candidates)
+        except Exception as exc:
+            # Never a 500 because of the AI; log the type only (the message could hold secrets).
+            logger.error("AI dish ideas: unexpected %s", type(exc).__name__)
+            return _fallback(candidates)
         result = validate_reply(reply, candidates)
         if result:
             picked, shopping = result

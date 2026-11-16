@@ -206,3 +206,17 @@ class PromptTests(TestCase):
         for secret in (user.email, other.email, address, "Fake Street"):
             self.assertNotIn(secret, text)
         self.assertNotIn("@", text)
+
+
+class UnexpectedErrorTests(TestCase):
+    def test_unexpected_exception_falls_back_and_logs_without_message(self):
+        recipes = [make(i) for i in range(4)]
+        with patch("recipes.ai.chat_json", side_effect=RuntimeError("secret-token-123")):
+            with self.assertLogs("recipes.ai", level="ERROR") as logs:
+                result = call()
+        self.assertFalse(result.ai_used)
+        self.assertEqual(result.notice, NOTICE)
+        self.assertEqual(len(result.ideas), 3)
+        self.assertIn("RuntimeError", logs.output[0])
+        self.assertNotIn("secret-token-123", "".join(logs.output))
+        self.assertTrue(recipes)
