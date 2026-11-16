@@ -7,4 +7,5 @@ app_name = "teams"
 urlpatterns = [
     path("dinners/<int:pk>/signup/", views.signup, name="signup"),
     path("teams/<int:pk>/", views.detail, name="detail"),
+    path("teams/join/<str:token>/", views.accept, name="accept"),
 ]
