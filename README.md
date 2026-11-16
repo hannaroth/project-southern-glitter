@@ -3,6 +3,8 @@ MGT 656 team project (team southern-glitter)
 
 A running-dinner web app for Yale and New Haven. Teams of two sign up for a dinner, each team hosts one course and eats the other two at other teams' homes, and everyone meets at an after-party.
 
+Live app: **production** https://yale-running-dinner.onrender.com · **staging** https://running-dinner-staging.onrender.com
+
 Stack: Django 5.2 and PostgreSQL, server-rendered pages styled with [Pico CSS](https://picocss.com). Hosting: Render (app) and Neon (database). The rules for AI agents are in `AGENTS.md`; the backlog is in `docs/backlog.md`.
 
 ## Run it locally
@@ -94,3 +96,29 @@ On Render, `RENDER_EXTERNAL_HOSTNAME` is added to the allowed hosts and trusted 
 - Build command: `./build.sh` (installs requirements, collects static files, runs migrations)
 - Start command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
 - Environment: `DATABASE_URL`, `SECRET_KEY`, and leave `DEBUG` unset.
+
+## Deploying to production
+
+We have two Render services with separate Neon databases:
+
+| Environment | URL | Deploys | When |
+|---|---|---|---|
+| Staging | https://running-dinner-staging.onrender.com | branch `main` | automatically, on every merge |
+| Production | https://yale-running-dinner.onrender.com (Render service `yale-running-dinner`) | branch `production` | only when someone runs **Promote to production** |
+
+Nobody pushes to `production` by hand. To deploy, run the **Promote to production** workflow (`.github/workflows/promote.yml`):
+
+- **In the browser:** repo → **Actions** tab → **Promote to production** (left list) → **Run workflow** → leave "Commit" empty for the latest `main` → **Run workflow**.
+- **From a terminal:** `gh workflow run promote.yml` (or `gh workflow run promote.yml -f sha=<commit>` for a specific commit on `main`).
+
+The workflow refuses to promote unless:
+
+1. the commit is on `main`,
+2. the **tests** check passed on that commit (if CI is still running, wait and run it again), and
+3. `production` can move forward to it (fast-forward only, never a force-push; promoting an older commit than the one live is refused).
+
+It then pushes the commit to `production`, and Render deploys it within a few minutes. The run's summary page shows which commit was promoted and what was live before. The same checks live in `scripts/promote.sh`, which the workflow calls.
+
+After promoting, check production: the home page, both grader logins, and `/c6a680e/stats`.
+
+If anyone protects the `production` branch later, allow GitHub Actions to push to it, or the workflow will fail at the push step.
