@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ dinner.title }} · Running Dinner New Haven{% endblock %}
+
+{% block head %}
+  {# Link previews when the page is shared (WhatsApp, iMessage, Slack). #}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ dinner.title }} · Running Dinner New Haven">
+  <meta property="og:description" content="{{ dinner.date|date:'D, M j, Y' }} · {{ dinner.theme }}. Sign up as a team of two: host one course, eat two at other teams' homes, then meet everyone at the after-party.">
+  <meta property="og:url" content="{{ share_url }}">
+  <meta name="description" content="{{ dinner.date|date:'D, M j, Y' }} · {{ dinner.theme }}">
+{% endblock %}
+
+{% block content %}
+  <p><a href="{% url 'home' %}">&larr; All dinners</a></p>
+  <article>
+    <header>
+      <h1>{{ dinner.title }}</h1>
+      <p><strong>{{ dinner.date|date:"l, F j, Y" }}</strong></p>
+    </header>
+    <p><strong>Theme:</strong> {{ dinner.theme }}</p>
+    <ul>
+      <li>Starter: {{ dinner.starter_time|time:"g:i A" }}</li>
+      <li>Main: {{ dinner.main_time|time:"g:i A" }}</li>
+      <li>Dessert: {{ dinner.dessert_time|time:"g:i A" }}</li>
+    </ul>
+    <p><strong>After-party:</strong> {{ dinner.after_party_name }}</p>
+    <p><small>Up to {{ dinner.team_cap }} teams of two. Each team hosts one course at home and eats the other two at other teams' homes.</small></p>
+
+    <footer id="join">
+      {% if is_past %}
+        <p>This dinner has already happened.</p>
+      {% elif signups_closed %}
+        <p>Sign-ups for this dinner are closed.</p>
+      {% elif user.is_authenticated %}
+        {% block join %}
+          {# Wired to "Sign up as a team" / "Your team" (teams:signup / teams:detail) once #26 is on main. #}
+          <p>Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
+        {% endblock %}
+      {% else %}
+        <p>Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
+        <a href="{{ login_url }}" role="button">Log in to join</a>
+      {% endif %}
+    </footer>
+  </article>
+
+  <article id="share">
+    <h2>Share this dinner</h2>
+    <p>Send this link to friends so they can sign up too:</p>
+    <fieldset role="group">
+      <input type="text" id="share-url" value="{{ share_url }}" readonly aria-label="Link to this dinner">
+      <button type="button" id="copy-share">Copy link</button>
+    </fieldset>
+    <p><small>{{ share_url }}</small></p>
+    <script>
+      document.getElementById("copy-share").addEventListener("click", function () {
+        var button = this;
+        var field = document.getElementById("share-url");
+        function copied() { button.textContent = "Copied!"; }
+        function selectForManualCopy() {
+          field.select();
+          button.textContent = "Press Ctrl+C (Cmd+C on Mac) to copy";
+        }
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(field.value).then(copied, selectForManualCopy);
+        } else {
+          selectForManualCopy();
+        }
+      });
+    </script>
+  </article>
+{% endblock %}
