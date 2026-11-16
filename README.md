@@ -40,6 +40,18 @@ Every pull request into `main` runs the linter, the missing-migrations check and
 
 The tests need a PostgreSQL database in `DATABASE_URL` whose user may create databases (Django creates and drops `test_<name>`). Run them with `DEBUG=true` (or a `SECRET_KEY`) set.
 
+## Claude Code shortcuts
+
+The repo includes Claude Code subagents (`.claude/agents/`) and commands (`.claude/skills/`). Start a coordinating session in the repo with `claude --model opus`, then type one of these:
+
+| Command | What it does |
+|---|---|
+| `/build-chain 12 26 27` | Builds the issues in order, each on top of the previous one when it isn't merged yet. A Sonnet `issue-builder` subagent writes each one, a separate `verifier` subagent re-runs the tests and checks it against the sprint plan, and then the pull request is opened with the reviewer from the issue. It never merges. |
+| `/review-pr 19` | Reviews the open pull request that closes #19 with the `verifier`, shows a short verdict, and approves and merges only after you answer "approve" (or requests changes after "changes"). |
+| `/sprint-report 2` | Writes `docs/mgt656/sprints/sprint-2.md` from GitHub data and opens its pull request. You can add agent lessons after the number. |
+
+The same rules apply as everywhere: `AGENTS.md` and the current `docs/sprint-*-plan.md`.
+
 ## Seed data and grader accounts
 
 `python manage.py seed` creates two accounts and three upcoming demo dinners ("Around the World", "Through the Eras", "No Theme, Just Dinner"):
