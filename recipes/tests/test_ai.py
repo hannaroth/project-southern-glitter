@@ -257,3 +257,43 @@ class VegetarianStarterTests(TestCase):
         self.assertNotIn("Starter 3", [c.title for c in candidates])
         result = call(course="starter", restrictions=["vegetarian"])
         self.assertEqual(len(result.ideas), 3)
+
+
+class TimeBudgetTests(TestCase):
+    def setUp(self):
+        for i in range(5):
+            make(i)
+
+    def run_with_clock(self, clock, side_effect):
+        with patch("recipes.ai.time.monotonic", side_effect=clock), patch(
+            "recipes.ai.chat_json", side_effect=side_effect
+        ) as chat:
+            result = call()
+        return result, chat
+
+    def test_first_call_gets_full_timeout(self):
+        result, chat = self.run_with_clock([0, 0, 1], [InvalidJSONReply("bad"), {"oops": 1}])
+        self.assertEqual(chat.call_args_list[0].kwargs["timeout"], 20)
+
+    def test_retry_gets_remaining_budget(self):
+        # 0 at start, 0 before the first call, 12 before the retry: 13 s left.
+        result, chat = self.run_with_clock([0, 0, 12], [InvalidJSONReply("bad"), {"oops": 1}])
+        self.assertEqual(chat.call_count, 2)
+        self.assertEqual(chat.call_args_list[1].kwargs["timeout"], 13)
+        self.assertFalse(result.ai_used)
+
+    def test_retry_timeout_capped_at_twenty(self):
+        result, chat = self.run_with_clock([0, 0, 2], [InvalidJSONReply("bad"), {"oops": 1}])
+        self.assertEqual(chat.call_args_list[1].kwargs["timeout"], 20)
+
+    def test_no_retry_when_less_than_five_seconds_left(self):
+        result, chat = self.run_with_clock([0, 0, 21], [InvalidJSONReply("bad"), {"oops": 1}])
+        self.assertEqual(chat.call_count, 1)
+        self.assertFalse(result.ai_used)
+        self.assertEqual(result.notice, NOTICE)
+        self.assertEqual(len(result.ideas), 3)
+
+    def test_retry_runs_with_exactly_five_seconds_left(self):
+        result, chat = self.run_with_clock([0, 0, 20], [InvalidJSONReply("bad"), {"oops": 1}])
+        self.assertEqual(chat.call_count, 2)
+        self.assertEqual(chat.call_args_list[1].kwargs["timeout"], 5)

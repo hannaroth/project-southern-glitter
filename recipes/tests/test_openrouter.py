@@ -30,6 +30,13 @@ class ChatJsonTests(SimpleTestCase):
                 chat_json([{"role": "user", "content": "hi"}])
         urlopen.assert_not_called()
 
+    def test_custom_timeout_is_passed_on(self):
+        with env(OPENROUTER_API_KEY="test-key"), patch(
+            "urllib.request.urlopen", return_value=fake_response("{}")
+        ) as urlopen:
+            chat_json([{"role": "user", "content": "hi"}], timeout=7.5)
+        self.assertEqual(urlopen.call_args.kwargs["timeout"], 7.5)
+
     def test_request_shape_and_parsing(self):
         with env(OPENROUTER_API_KEY="test-key"), patch(
             "urllib.request.urlopen", return_value=fake_response('{"a": 1}')

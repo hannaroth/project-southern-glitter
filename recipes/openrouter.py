@@ -22,8 +22,11 @@ class MissingAPIKey(OpenRouterError):
     """OPENROUTER_API_KEY is not set."""
 
 
-def chat_json(messages, *, model=None):
-    """Send chat messages and return the reply content parsed as a JSON object (dict)."""
+def chat_json(messages, *, model=None, timeout=None):
+    """Send chat messages and return the reply content parsed as a JSON object (dict).
+
+    `timeout` is in seconds; None means TIMEOUT_SECONDS.
+    """
     api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not api_key:
         raise MissingAPIKey("OPENROUTER_API_KEY is not set")
@@ -45,7 +48,7 @@ def chat_json(messages, *, model=None):
         },
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS if timeout is None else timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
         content = payload["choices"][0]["message"]["content"]
     except urllib.error.HTTPError as exc:

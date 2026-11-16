@@ -7,16 +7,20 @@ are returned through the fallback.
 import json
 import logging
 import random
+import time
 from dataclasses import dataclass, field
 
 from .models import Recipe
-from .openrouter import InvalidJSONReply, OpenRouterError, chat_json
+from .openrouter import TIMEOUT_SECONDS, InvalidJSONReply, OpenRouterError, chat_json
 
 logger = logging.getLogger(__name__)
 
 CANDIDATE_LIMIT = 20
 IDEA_COUNT = 3
 WISH_MAX_LENGTH = 200
+# Both attempts together stay under gunicorn's 30 s worker timeout.
+TOTAL_BUDGET_SECONDS = 25
+MIN_RETRY_SECONDS = 5
 FALLBACK_NOTICE = "AI unavailable, here are matching recipes"
 
 # restriction key -> (required tag, excluded tag)
@@ -138,9 +142,14 @@ def suggest_dishes(*, course, theme, restrictions, wish="", exclude_ids=()):
     if len(candidates) < IDEA_COUNT:
         return _fallback(candidates)
     messages = build_messages(candidates, course, theme, restrictions, wish)
-    for _attempt in range(2):
+    started = time.monotonic()
+    for attempt in range(2):
+        remaining = TOTAL_BUDGET_SECONDS - (time.monotonic() - started)
+        if attempt and remaining < MIN_RETRY_SECONDS:
+            logger.warning("AI dish ideas: no time left for a retry")
+            break
         try:
-            reply = chat_json(messages)
+            reply = chat_json(messages, timeout=min(TIMEOUT_SECONDS, remaining))
         except InvalidJSONReply:
             logger.warning("AI dish ideas: reply was not valid JSON")
             continue
