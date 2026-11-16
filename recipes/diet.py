@@ -69,12 +69,27 @@ MEAT_FISH_KEYWORDS = [
     "cod", "haddock", "hake", "mackerel", "sardine", "anchovy", "anchovie", "prawn", "shrimp",
     "crab", "lobster", "mussel", "clam", "oyster", "scallop", "squid", "octopus", "calamari",
     "worcestershire sauce", "stock", "broth", "bouillon",
+    "black pudding", "blood pudding", "dashi", "bonito", "katsuobushi", "caviar", "roe",
+    "trout", "sea bass", "bass", "halibut", "herring", "eel", "tilapia", "snapper",
+    "swordfish", "monkfish", "mahi mahi", "kipper", "cockle", "whelk", "langoustine",
+    "crevette", "surimi", "fishcake", "cuttlefish", "escargot", "snail", "steak", "ribeye",
+    "sirloin", "tenderloin", "ribs", "short ribs", "brisket", "rabbit", "pheasant", "quail",
+    "pigeon", "bresaola", "mortadella", "hot dog", "frankfurter", "lardon", "guanciale",
+    "nduja", "pastrami", "spam", "meatball", "jerky", "wings", "drumstick", "poultry",
+    "bone marrow", "marrow bone", "foie gras", "tripe", "tongue", "offal", "sweetbread",
+    "haggis", "pate", "pâté", "tallow", "schmaltz", "crackling", "oxo", "bovril", "gravy",
+    "nam pla", "shrimp paste", "curry paste", "caesar dressing", "xo sauce",
 ]
-# Words that mark an ingredient as meat-free ("Vegetable Stock", "Vegan Mince").
-MEAT_FREE_MARKERS = (
-    "vegetable", "veggie", "vegetarian", "vegan", "meat-free", "meat free", "meatless",
-    "plant-based", "veg stock",
-)
+# Exact meat-free phrases removed before the keyword check. Anything left over is still
+# checked, so "Chicken and vegetable stock" stays meat. Never exempt a bare word like "vegetable".
+MEAT_FREE_PHRASES = [
+    "vegetable stock cube", "vegetable stock", "vegetable broth", "vegetable bouillon",
+    "veggie stock", "vegan stock", "veggie sausage", "vegetarian sausage", "vegan sausage",
+    "vegetarian mince", "vegan mince", "meat-free mince", "plant-based mince",
+    "vegetable suet", "vegetarian suet", "vegetarian gelatine", "vegan gelatine",
+    "vegetarian worcestershire sauce", "vegan fish sauce", "vegan curry paste",
+    "vegetarian curry paste",
+]
 # Phrases removed before the meat check, so they cannot trigger a keyword.
 MEAT_SAFE_PHRASES = ["kidney bean", "kidney beans", "butternut", "coconut"]
 EGG_HONEY_KEYWORDS = [
@@ -94,6 +109,10 @@ _NUT_RE = _compile(NUT_KEYWORDS)
 _MEAT_RE = _compile(MEAT_FISH_KEYWORDS)
 _EGG_HONEY_RE = _compile(EGG_HONEY_KEYWORDS)
 _MEAT_SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(MEAT_SAFE_PHRASES, key=len, reverse=True)))
+_MEAT_FREE_RE = re.compile(
+    r"(?<![a-z])(?:" + "|".join(re.escape(p) for p in sorted(MEAT_FREE_PHRASES, key=len, reverse=True))
+    + r")(?:e?s)?(?![a-z])"
+)
 _SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(SAFE_PHRASES, key=len, reverse=True)))
 
 
@@ -111,11 +130,12 @@ def _any(regex, names, free_markers, keep=()):
 
 
 def _has_meat(names):
-    return any(
-        not any(m in n.lower() for m in MEAT_FREE_MARKERS)
-        and _MEAT_RE.search(_MEAT_SAFE_RE.sub(" ", (n or "").lower()))
-        for n in names
-    )
+    for n in names:
+        text = " ".join((n or "").lower().split())
+        text = _MEAT_FREE_RE.sub(" ", text)
+        if _MEAT_RE.search(_MEAT_SAFE_RE.sub(" ", text)):
+            return True
+    return False
 
 
 def _has_egg_or_honey(names):

@@ -75,6 +75,51 @@ class DerivedVegetarianTests(SimpleTestCase):
         ):
             self.assertIn("vegetarian", tags("Starter", "Tomato", n), n)
 
+    def test_mixed_marker_names_are_meat(self):
+        for n in (
+            "Chicken and vegetable stock", "Beef and Vegetable Broth", "Vegetable and Chicken Stock",
+            "Chicken Stock (vegetable)", "Veggie Sausages with Pork", "Vegan Gelatine and Gelatine",
+        ):
+            self.assertEqual(tags("Starter", n), [], n)
+            self.assertNotIn("vegetarian", tags("Starter", "Tomato", n), n)
+
+    def test_new_meat_fish_keywords_block(self):
+        for n in (
+            "Black Pudding", "Blood Pudding", "Dashi", "Bonito Flakes", "Katsuobushi", "Caviar",
+            "Roe", "Trout", "Sea Bass", "Bass", "Halibut", "Herring", "Eel", "Tilapia",
+            "Snapper", "Swordfish", "Monkfish", "Mahi Mahi", "Kippers", "Cockles", "Whelks",
+            "Langoustines", "Crevettes", "Surimi", "Fishcakes", "Cuttlefish", "Escargot",
+            "Snails", "Steak", "Ribeye", "Sirloin", "Tenderloin", "Ribs", "Short Ribs",
+            "Brisket", "Rabbit", "Pheasant", "Quail", "Pigeon", "Bresaola", "Mortadella",
+            "Hot Dogs", "Frankfurters", "Lardons", "Guanciale", "Nduja", "Pastrami", "Spam",
+            "Meatballs", "Jerky", "Wings", "Drumsticks", "Poultry", "Bone Marrow",
+            "Marrow Bones", "Foie Gras", "Tripe", "Tongue", "Offal", "Sweetbreads", "Haggis",
+            "Pate", "Pâté", "Tallow", "Schmaltz", "Crackling", "Oxo Cube", "Bovril", "Gravy",
+            "Nam Pla", "Shrimp Paste", "Red Curry Paste", "Thai Green Curry Paste",
+            "Caesar Dressing", "XO Sauce",
+        ):
+            self.assertNotIn("vegetarian", tags("Starter", "Tomato", n), n)
+            self.assertNotIn("vegan", tags("Starter", "Tomato", n), n)
+
+    def test_meat_free_phrases_alone_stay_vegan(self):
+        for n in (
+            "Vegetable Stock", "Vegetable Stock Cube", "Vegetable Broth", "Vegetable Bouillon",
+            "Veggie Stock", "Vegan Stock", "Veggie Sausages", "Vegetarian Sausage",
+            "Vegan Sausages", "Vegetarian Mince", "Vegan Mince", "Meat-free Mince",
+            "Plant-based Mince", "Vegetable Suet", "Vegetarian Suet", "Vegetarian Gelatine",
+            "Vegan Gelatine", "Vegetarian Worcestershire Sauce", "Vegan Fish Sauce",
+            "Vegan Curry Paste", "Vegetarian Curry Paste",
+        ):
+            self.assertEqual(tags("Starter", n), ["vegetarian", "vegan"], n)
+
+    def test_false_positive_guards(self):
+        for n in (
+            "Rice Pudding", "Christmas Pudding", "Pudding Rice", "Marrow", "Kidney Beans",
+            "Vegetable Stock", "Veggie Sausages", "Hamburger Buns", "Eggplant",
+            "Butternut Squash", "Sea Salt", "Coconut", "Chocolate", "Ribbons of Courgette",
+        ):
+            self.assertIn("vegetarian", tags("Starter", "Tomato", n), n)
+
     def test_meat_category_never_vegetarian(self):
         for c in ("Beef", "Chicken", "Lamb", "Pork", "Seafood", "Goat"):
             self.assertNotIn("vegetarian", tags(c, "Tomato", "Basil"), c)

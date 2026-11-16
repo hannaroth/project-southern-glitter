@@ -25,7 +25,7 @@ Why things are the way they are. Add a line when the team decides something or K
 | Nov 15 | Incomplete teams | A team holds its spot from sign-up, before the partner accepts | Partners usually agree to go together first |
 | Nov 15 | Check-in | Monday after class, 10 minutes (replaces "Tuesday, TODO time") | Catch blockers before the Tuesday target |
 | Nov 16 | AI model | `google/gemini-2.5-flash-lite` via `OPENROUTER_MODEL`, changeable without code | Cheap, fast enough for the 20-second timeout, reliable JSON; key spending stops at $20 of the team's $60 grant |
-| Nov 16 | Diet tags | `vegetarian`/`vegan` also derived from ingredients (no meat/fish keywords; vegan also no dairy, egg or honey), not only from TheMealDB's category; existing recipes re-tagged by a data migration (changes contract 5.4) | Category-only tags were mains only, so one vegetarian team left starter and dessert hosts with no ideas (Nicola's review of #49) |
+| Nov 16 | Diet tags | `vegetarian`/`vegan` also derived from ingredients (no meat/fish keywords, and only known meat-free phrases such as "vegetable stock" or "veggie sausages" are exempt from the keyword check; vegan also no dairy, egg or honey), not only from TheMealDB's category; existing recipes re-tagged by a data migration (changes contract 5.4) | Category-only tags were mains only, so one vegetarian team left starter and dessert hosts with no ideas (Nicola's review of #49) |
 | Nov 16 | AI time limit | Each OpenRouter call waits at most 20 s, both attempts together at most 25 s; the retry only runs if 5 s are left (changes contract 5.5) | Render's gunicorn kills a request after 30 s, before the fallback could show (Nicola's review of #49) |
 
 ## What Kyle has told us

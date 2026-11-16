@@ -3,6 +3,7 @@ from django.db import migrations
 from recipes.diet import derive_diet_tags
 
 
+# Deliberately uses the current derive_diet_tags, so a deploy re-tags with the latest rules.
 def recompute_diet_tags(apps, schema_editor):
     """Re-derive diet_tags for every recipe from its stored category and ingredients."""
     Recipe = apps.get_model("recipes", "Recipe")
