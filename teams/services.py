@@ -30,12 +30,12 @@ def can_see_address(user, team):
 
 def accept_refusal(user, team):
     """Why `user` may not accept `team`'s partner invite, or None if they may."""
+    if team.status == Team.Status.CANCELLED:
+        return "This team has cancelled its sign-up."
     if user.pk == team.creator_id:
         return "This is your own team's invite link. Send it to your partner instead."
     if team.partner_id is not None:
         return "This team already has a partner."
-    if team.status == Team.Status.CANCELLED:
-        return "This team has cancelled its sign-up."
     if not signups_open(team.dinner):
         return "Sign-ups for this dinner are closed."
     if active_team_for(user, team.dinner):

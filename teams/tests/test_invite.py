@@ -218,6 +218,25 @@ class AcceptRefusalTests(TestCase):
         self.team.save()
         self.assertRefused(self.bo, "This team has cancelled its sign-up.")
 
+    def test_creator_of_a_cancelled_team_is_told_it_is_cancelled(self):
+        self.team.status = Team.Status.CANCELLED
+        self.team.cancelled_at = timezone.now()
+        self.team.save()
+        self.assertRefused(self.ann, "This team has cancelled its sign-up.")
+
+    def test_only_get_and_post_allowed(self):
+        self.client.force_login(self.bo)
+        self.assertEqual(self.client.put(self.url).status_code, 405)
+        self.team.refresh_from_db()
+        self.assertIsNone(self.team.partner)
+
+    def test_post_without_csrf_token_is_refused(self):
+        client = self.client_class(enforce_csrf_checks=True)
+        client.force_login(self.bo)
+        self.assertEqual(client.post(self.url).status_code, 403)
+        self.team.refresh_from_db()
+        self.assertIsNone(self.team.partner)
+
     def test_accept_refusal(self):
         self.assertIsNone(accept_refusal(self.bo, self.team))
         self.assertIn("own", accept_refusal(self.ann, self.team))

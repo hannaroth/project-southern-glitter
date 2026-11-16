@@ -4,6 +4,7 @@ from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 from dinners.models import Dinner
 
@@ -78,6 +79,7 @@ def detail(request, pk):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def accept(request, token):
     team = get_object_or_404(Team.objects.select_related("dinner", "creator"), invite_token=token)
 
