@@ -8,17 +8,18 @@
 
 <!-- TODO Tue: keep only what is merged, and fill in the missing pull request numbers. -->
 - Admins create and edit dinners: #12, PR #44
-- Sign up for a dinner as a team of two: #13, made of the sign-up form #26 (PR #48), the partner invite link #27 (PR #50) and the waitlist #28 (PR #…)
-- Share a dinner: #14, PR #…
-- Production environment: #16. A separate Render service and Neon database (set up directly on Render; no pull request), and a "Promote to production" workflow that moves a tested `main` commit to production (PR #…)
+- Sign up for a dinner as a team of two: #13, made of the sign-up form #26 (PR #48), the partner invite link #27 (PR #50) and the waitlist #28 (PR #57)
+- Share a dinner: #14, PR #56
+- Sign-up keeps the page you came from, so a new partner lands back on the invite: #53, PR #54 (found while building #27)
+- Production environment: #16. A separate Render service and Neon database (set up directly on Render; no pull request), and a "Promote to production" workflow that moves a tested `main` commit to production (PR #55; production URL in the README, PR #59)
 - Recipe database imported from TheMealDB: #19, PR #47
 - AI dish ideas, first slice: #20, PR #49
-- Also: the Sprint 2 plan and decisions (PR #41), Claude Code subagents and team commands (PR #45), and the first version of `technical.md` (#43, PR #…)
+- Also: the Sprint 2 plan and decisions (PR #41), Claude Code subagents and team commands (PR #45), and the first version of `technical.md` (#43, PR #58)
 
 ## What works on staging and production now
 
 Staging: https://running-dinner-staging.onrender.com
-Production: <!-- TODO: production URL -->
+Production: https://yale-running-dinner.onrender.com
 
 <!-- TODO Tue: keep only what the check of both sites confirmed. -->
 - Admins create and edit dinners in the admin area, with course times, the after-party and a sign-up deadline.
@@ -33,8 +34,8 @@ Production: <!-- TODO: production URL -->
 
 <!-- One concrete thing per person: what worked or didn't, and what you changed. -->
 - **Nicola:** Running Claude Code locally needed a one-time 15-minute setup (Homebrew, gh, Python 3.13, Postgres 16). After that, an Opus coordinator with a Sonnet builder and an independent verifier subagent shipped #26 with 142 green tests in about 7 minutes. Lesson: give the agent the environment details up front, and always have a second agent verify.
-- **Jason:** <!-- TODO: Jason's lesson -->
-- **Hanna:** <!-- TODO: Hanna's lesson -->
+- **Jason:** Before asking for review on #28 (Waitlist), my agent test-merged the branch against the pull requests it depends on and found it would conflict with #27's invite code in two files. Instead of leaving the reviewer to untangle that at merge time, we merged #27 into my branch and resolved it there, re-ran all 216 tests, and said so in the PR. Lesson: check a branch against the open pull requests it builds on, not just against `main`, before asking for review.
+- **Hanna:** Two verifier agents on my side passed #49 (AI dish ideas) with no blockers, but Nicola's review, also run with Claude Code, found that invalid JSON from the AI wasn't retried as contract 5.5 requires; we fixed it within the hour and the reviewer approved. Lesson: a second, independent review against the contract catches what the builder's own checks miss, even when both are agents.
 
 ## Backlog changes for Sprint 3
 
