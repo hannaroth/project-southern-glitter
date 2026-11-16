@@ -64,3 +64,18 @@ def waitlist_position(team):
         Q(created_at__lt=team.created_at) | Q(created_at=team.created_at, id__lt=team.id)
     )
     return ahead.count() + 1
+
+
+def accept_refusal(user, team):
+    """Why `user` may not accept `team`'s partner invite, or None if they may."""
+    if team.status == Team.Status.CANCELLED:
+        return "This team has cancelled its sign-up."
+    if user.pk == team.creator_id:
+        return "This is your own team's invite link. Send it to your partner instead."
+    if team.partner_id is not None:
+        return "This team already has a partner."
+    if not signups_open(team.dinner):
+        return "Sign-ups for this dinner are closed."
+    if active_team_for(user, team.dinner):
+        return "You already have a team for this dinner, so you can't join another one."
+    return None

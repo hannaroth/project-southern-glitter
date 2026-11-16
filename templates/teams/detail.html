@@ -20,4 +20,34 @@
     {% if team.dietary_notes %}<p><strong>Other dietary needs:</strong> {{ team.dietary_notes }}</p>{% endif %}
     <p><strong>Course we'd like to host:</strong> {{ team.get_preferred_course_display }}</p>
   </article>
+  {% if invite_url %}
+    <article>
+      <h2>Invite your partner</h2>
+      {% if signups_open %}
+        <p>Send this link to your partner. Your team is complete once they open it while logged in and accept.</p>
+        <fieldset role="group">
+          <input type="text" id="invite-url" value="{{ invite_url }}" readonly aria-label="Invite link">
+          <button type="button" id="copy-invite">Copy link</button>
+        </fieldset>
+        <script>
+          document.getElementById("copy-invite").addEventListener("click", function () {
+            var button = this;
+            var field = document.getElementById("invite-url");
+            function copied() { button.textContent = "Copied!"; }
+            function selectForManualCopy() {
+              field.select();
+              button.textContent = "Press Ctrl+C (Cmd+C on Mac) to copy";
+            }
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(field.value).then(copied, selectForManualCopy);
+            } else {
+              selectForManualCopy();
+            }
+          });
+        </script>
+      {% else %}
+        <p>Sign-ups for this dinner are closed, so your partner can no longer accept the invite.</p>
+      {% endif %}
+    </article>
+  {% endif %}
 {% endblock %}
