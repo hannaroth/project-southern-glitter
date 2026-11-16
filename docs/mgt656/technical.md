@@ -1,15 +1,15 @@
 # Technical challenge and testing strategy
 
-Team southern-glitter, running-dinner app. Repo: `hannaroth/project-southern-glitter`. Staging: <https://running-dinner-staging.onrender.com>. Production: added here once its Render service is live (#16).
+Team southern-glitter, running-dinner app. Repo: `hannaroth/project-southern-glitter`. Staging: <https://running-dinner-staging.onrender.com>. Production: <https://yale-running-dinner.onrender.com>.
 
 This file is updated every sprint. Each item says what it is, where the code lives, the pull requests, how to see it working, and how it handles failure.
 
 | # | Item | Course category | Status (Sprint 2) |
 |---|---|---|---|
 | 1 | CI: tests and linting on every pull request, merge blocked on failure | Delivery | Done |
-| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Workflow in review (PR #55); production service being set up |
+| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Done (workflow merged, PR #55) |
 | 3 | Importing external data: recipes from TheMealDB | Backend | Done |
-| 4 | Structured LLM output that drives app behavior: AI dish ideas | AI | Started (PR #49) |
+| 4 | Structured LLM output that drives app behavior: AI dish ideas | AI | In review (PR #49, approved, waits on #48) |
 
 ## 1. CI: tests and linting on every pull request, merge blocked on failure
 
@@ -39,7 +39,7 @@ A repository ruleset, "Protect main: tests must pass", makes the **tests** check
 | Staging | branch `main` | automatically, on every merge |
 | Production | branch `production` | only when someone runs **Promote to production** |
 
-**Promote to production** is a manual GitHub Actions workflow. Anyone can run it from the Actions tab or with `gh workflow run promote.yml`, with no access to Render. It promotes the latest `main`, or a chosen commit, only if:
+**Promote to production** is a manual GitHub Actions workflow. Anyone with write access to the repo can run it from the Actions tab or with `gh workflow run promote.yml`, without access to Render. It promotes the latest `main`, or a chosen commit, only if:
 
 - the commit is on `main`, and
 - the **tests** check passed on *that exact* commit.
@@ -48,11 +48,11 @@ It then fast-forwards `production` to it, never with a force-push. Render notice
 
 **Files.** `.github/workflows/promote.yml`, `scripts/promote.sh` (the git checks and the push), `build.sh`, and the README section "Deploying to production".
 
-**Pull requests.** #55 (issue #16, the workflow, in review). The Render service, Neon database and environment variables are dashboard work with no pull request (#16).
+**Pull requests.** #55 (issue #16), merged Nov 16. The Render services, Neon databases and environment variables are dashboard work with no pull request (#16).
 
 **How to see it working.**
 - Merge any pull request: within minutes staging shows the change.
-- Production: Actions → **Promote to production** → **Run workflow**. The run's summary page names the commit promoted and what was live before. Then open the production URL.
+- Production: Actions → **Promote to production** → **Run workflow**. The run's summary page names the commit promoted and what was live before. Then open <https://yale-running-dinner.onrender.com> and check `/`, both grader logins and `/c6a680e/stats`.
 
 **Failure handling.** The workflow refuses, with a message saying why, when:
 - the commit is not on `main`;
@@ -75,7 +75,7 @@ Rows are matched by TheMealDB's id, so running the import twice updates rather t
 
 **Pull requests.** #47 (issue #19), merged Nov 16.
 
-**How to see it working.** Log in to `/admin/` as the admin grader account and open **Recipes**: the list is filled, with course and diet tags.
+**How to see it working.** On staging, log in as the admin grader account and open `/admin/recipes/recipe/`: the list is filled (781 recipes on staging as of Nov 16), with course and diet tags.
 
 **Failure handling.**
 - Each request has a 10-second timeout and a short pause between requests.
@@ -91,11 +91,11 @@ Rows are matched by TheMealDB's id, so running the import twice updates rather t
 3. **The app validates that reply before using it.** It cannot invent a recipe or ignore a restriction, because anything outside the candidate list is rejected.
 4. **Privacy:** the prompt contains only the theme, course, restriction keys, an optional short wish, and the candidates. No names, emails or addresses are ever sent.
 
-**Files (in PR #49).** `recipes/openrouter.py` (the HTTP call, 20-second timeout, key from `OPENROUTER_API_KEY`), `recipes/ai.py` (candidates, prompt, validation, fallback), `recipes/tests/test_ai.py`.
+**Files (in PR #49).** `recipes/openrouter.py` (the HTTP call, 20-second timeout, key from `OPENROUTER_API_KEY`), `recipes/ai.py` (candidates, prompt, validation, fallback), `recipes/views.py`, `recipes/urls.py`, `templates/recipes/dish_ideas.html`, and the tests `recipes/tests/test_ai.py`, `recipes/tests/test_openrouter.py` and `recipes/tests/test_dish_ideas_page.py`.
 
-**Pull requests.** #49 (issue #20), in review.
+**Pull requests.** #49 (issue #20), approved; it merges after #48, whose team pages it builds on.
 
-**How to see it working.** Once merged: sign up for a dinner, open your team page, then **Dish ideas**.
+**How to see it working.** Once merged: log in, sign up a team for a dinner, open your team page, click **Get dish ideas** (`/dinners/<pk>/dish-ideas/`), then **Suggest dishes**. The page needs login and team membership; anyone else gets 403.
 
 **Failure handling.** An invalid reply (bad JSON, wrong count, an id outside the candidates) is retried once. After that, and whenever the key is missing or OpenRouter errors or times out, the page shows three matching recipes chosen by our code, labelled "AI unavailable, here are matching recipes". The page always works.
 
@@ -106,28 +106,29 @@ Rows are matched by TheMealDB's id, so running the import twice updates rather t
 
 ## Testing strategy
 
-**Where tests run.** On a real PostgreSQL database, both locally and in CI. We don't use SQLite for tests, so database behavior such as row locks and JSON fields is tested for real. Every pull request needs green CI, and the reviewer re-runs the suite and clicks through the change before merging (`docs/sprint-2-plan.md`, section 6).
+**Where tests run.** On a real PostgreSQL database, both locally and in CI. We don't use SQLite for tests, so queries and constraints behave as in production. Every pull request needs green CI, and the reviewer re-runs the suite and clicks through the change before merging (`docs/sprint-2-plan.md`, section 6).
 
 **What we test, at which level.**
 
-| Level | Examples | Tools |
-|---|---|---|
-| Business rules as plain functions | waitlist status and position, who may accept an invite, sign-ups open or closed, course mapping and diet tags, the A/B "preferred" calculation | Django `TestCase` |
-| Models and migrations | `Dinner` validation (course times in order, deadline before the dinner); every model change has a migration (CI) | `TestCase`, `makemigrations --check` |
-| Pages and permissions | each acceptance criterion through HTTP: who can see a team's address, login redirects with `?next=`, one team per person per dinner, CSRF on the invite accept, A/B impressions and clicks counted once per visitor | Django test client |
-| Management commands | `seed` creates the grader accounts and is safe to run twice; `import_recipes` with fake HTTP responses, including failures | `call_command` |
-| By hand, before each review | a click-through in a real browser, sometimes at phone size; for the A/B page, a script that played 200 fresh visitors against a running server | browser, Playwright script |
+| Level | On `main` now | In open pull requests (in review) | Tools |
+|---|---|---|---|
+| Business rules as plain functions | the A/B "preferred" calculation; course mapping and diet tags (`recipes/tests/test_diet.py`) | waitlist status and position (#57); who may accept an invite (#50); sign-ups open or closed (#48) | Django `TestCase` |
+| Models and migrations | `Dinner` validation: course times in order, deadline before the dinner (`dinners/tests/test_dinner_fields.py`); every model change has a migration (CI) | the `Team` model (#48) | `TestCase`, `makemigrations --check` |
+| Pages and permissions | login redirects with `?next=` (`accounts/tests`, `dinners/tests/test_detail.py`); who can open the admin; A/B impressions and clicks counted once per visitor, and the A/B click still counted with CSRF enforced (`abtest/tests`) | who can see a team's address and one team per person per dinner (#48); CSRF and allowed methods on the invite accept (#50); the dish-ideas page's permissions (#49) | Django test client |
+| Management commands | `seed` creates the grader accounts and is safe to run twice; `import_recipes` with fake HTTP responses, including failures | | `call_command` |
+| By hand, before each review | a click-through in a real browser, sometimes at phone size; for the A/B page, a scripted run of 200 fresh visitors against gunicorn and Postgres, described in PR #35 | | browser |
 
 **What we mock, and why.**
 - **TheMealDB:** `urllib.request.urlopen` is patched with canned responses, including network errors, empty results and bad JSON; the tests also check the 10-second timeout is passed, and set the pause between requests to 0.
-- **OpenRouter:** `chat_json` is patched to return valid, invalid and failing replies, so tests cover the retry and the fallback, and check that no personal data is in the prompt.
-- **Randomness and time:** the A/B 50/50 choice (`random.choice`) and `timezone.now` for deadlines, so tests are repeatable.
+- **OpenRouter (PR #49):** `chat_json` is patched to return valid, invalid and failing replies, so tests cover the retry and the fallback, and check that no personal data is in the prompt.
+- **Randomness:** the A/B 50/50 choice (`random.choice`), so tests are repeatable.
+- **Time:** tests on `main` build dates relative to today, so they never go stale; #48's tests also patch `timezone.now` to test the exact deadline moment.
 
 No test calls a real outside service: tests must run with no keys and no network, they must not cost money, and a slow or changing outside service shouldn't make CI fail.
 
 **What we don't test, and why.**
 - **The real outside services**, beyond our side of the contract: we test how we call them and handle every kind of failure, not whether TheMealDB or OpenRouter are up.
 - **How good the AI's suggestions are:** tests check the reply's shape and that it stays within the candidates. Judging quality needs an evaluation set, planned for Sprint 3 or 4.
-- **Render and Neon configuration:** checked by deploying (staging on every merge, production on every promotion) and by the post-deploy checks in the sprint plan. The promotion script's git rules were tested against a throwaway repository instead.
+- **Render and Neon configuration:** checked by deploying (staging on every merge, production on every promotion) and by the post-deploy checks in the README section "Deploying to production". The promotion script's git rules were tested against a throwaway repository instead.
 - **Visual design and the copy-link buttons' JavaScript:** checked by hand in a browser. End-to-end browser tests (Playwright) in CI are a possible later item.
 - **Django's own login and admin code:** we test our use of them (redirects, who reaches the admin), not the framework itself.
