@@ -14,6 +14,16 @@ Why things are the way they are. Add a line when the team decides something or K
 | Nov 9 | Who merges | The reviewer named in the issue approves the pull request, then merges it | Keeps the author from merging their own work; nobody has to wait for Hanna |
 | Nov 9 | Sprint 1 owners | Hanna: GitHub Project setup, backlog issues, staging, submission. Nicola: base app, seed command, dinners list, report. Jason: A/B page and stats, tests on every pull request, check on staging. Each issue names its owner and reviewer. | Split at the Sprint 1 meeting; Hanna owns what needs the repo owner's account |
 | Nov 9 | Check-in | Tuesday, TODO time | Catch blockers before the Wednesday deadline |
+| Nov 11 | Course requirements | The requirements repo (`yale-mgt-656-fall-2026/project-requirements`) replaces the old assignment page; no story points, velocity or burndown charts | Kyle moved the requirements there on Nov 11; this replaces his Nov 9 note about a burndown chart |
+| Nov 15 | Who merges | The reviewer approves and merges right away once CI is green; the author never merges their own pull request | Confirms the Nov 9 rule; in Sprint 1, 5 of 6 pull requests were merged by their author, and we return to the rule |
+| Nov 15 | Sprint 2 scope | #12, #13 (#26, #27, #28), #14, #16; #15 moved to Sprint 3; AI start = #19 recipe database plus #20 dish ideas (pulled from Sprint 3); matching (#17) stays in Sprint 3 | Course requires "AI feature started" in Sprint 2; Kyle asked for a recipe database (Nov 7) |
+| Nov 15 | AI dish ideas | One-click suggestions from our own recipe table, no chat | Testable, cheap, can't invent recipes |
+| Nov 15 | Recipe source | TheMealDB, key from `THEMEALDB_API_KEY` (test key `1` in development); ask Kyle about the supporter key for production | Its categories and cuisines fit our courses and themes |
+| Nov 15 | Production | Separate Render service and Neon database; Render deploys branch `production`; the "Promote to production" workflow moves a tested `main` commit there | Deliberate, repeatable step that anyone or any agent can run (CD) |
+| Nov 15 | Sprint 2 owners | Nicola: #12, #26, #27, report. Jason: promote workflow, #14, #28, promotion and checks, `technical.md`. Hanna: production setup, #19, #20, submission. Nicola also assigns the issues and updates the board. Reviews: Jason reviews Nicola's work and the report, Hanna reviews Jason's (including `technical.md`), Nicola reviews Hanna's | Split on Nov 15 for even load and few hand-offs |
+| Nov 15 | OpenRouter credits | Hanna gets credits and a key from the Yale SOM Token Fund (fund.som.chat, Yale login) and stores the key only in Render | Course requires OpenRouter; no key passes between people |
+| Nov 15 | Incomplete teams | A team holds its spot from sign-up, before the partner accepts | Partners usually agree to go together first |
+| Nov 15 | Check-in | Monday after class, 10 minutes (replaces "Tuesday, TODO time") | Catch blockers before the Tuesday target |
 
 ## What Kyle has told us
 
