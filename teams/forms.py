@@ -21,8 +21,3 @@ class TeamSignupForm(forms.ModelForm):
         }
         widgets = {"preferred_course": forms.RadioSelect}
 
-    def clean_address(self):
-        address = self.cleaned_data["address"].strip()
-        if not address:
-            raise forms.ValidationError("Please enter your address.")
-        return address
