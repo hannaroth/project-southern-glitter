@@ -24,6 +24,7 @@ Why things are the way they are. Add a line when the team decides something or K
 | Nov 15 | OpenRouter credits | Hanna gets credits and a key from the Yale SOM Token Fund (fund.som.chat, Yale login) and stores the key only in Render | Course requires OpenRouter; no key passes between people |
 | Nov 15 | Incomplete teams | A team holds its spot from sign-up, before the partner accepts | Partners usually agree to go together first |
 | Nov 15 | Check-in | Monday after class, 10 minutes (replaces "Tuesday, TODO time") | Catch blockers before the Tuesday target |
+| Nov 16 | AI model | `google/gemini-2.5-flash-lite` via `OPENROUTER_MODEL`, changeable without code | Cheap, fast enough for the 20-second timeout, reliable JSON; key spending stops at $20 of the team's $60 grant |
 
 ## What Kyle has told us
 
