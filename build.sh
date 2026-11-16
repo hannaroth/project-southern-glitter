@@ -6,6 +6,9 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
+# Fill the recipe table on first deploy; a failed import must never fail the build.
+python manage.py import_recipes --if-empty || echo "Recipe import failed; continuing"
+
 # Render's free plan has no shell, so seed here whenever both seed passwords are set.
 # The command is safe to run on every deploy.
 if [ -n "${SEED_ADMIN_PASSWORD:-}" ] && [ -n "${SEED_MEMBER_PASSWORD:-}" ]; then

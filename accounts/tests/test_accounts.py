@@ -86,6 +86,60 @@ class SignUpTests(TestCase):
         self.assertFalse(User.objects.exists())
 
 
+class SignUpNextTests(TestCase):
+    """Issue #53: sign-up keeps the page the user came from (?next=), same-site only."""
+
+    data = SignUpTests.data
+    invite = "/teams/join/abc123/"
+
+    def test_login_page_signup_link_carries_next(self):
+        response = self.client.get("/login/", {"next": self.invite})
+        self.assertContains(response, 'href="/signup/?next=/teams/join/abc123/"')
+
+    def test_login_page_signup_link_plain_without_next(self):
+        self.assertContains(self.client.get("/login/"), 'href="/signup/"')
+
+    def test_signup_form_keeps_next(self):
+        response = self.client.get("/signup/", {"next": self.invite})
+        self.assertContains(response, f'<input type="hidden" name="next" value="{self.invite}">')
+
+    def test_signup_form_keeps_next_when_shown_again_with_errors(self):
+        response = self.client.post(f"/signup/?next={self.invite}", {**self.data, "password2": "nope"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'<input type="hidden" name="next" value="{self.invite}">')
+
+    def test_signup_logs_in_and_goes_to_next(self):
+        response = self.client.post("/signup/", {**self.data, "next": self.invite})
+        self.assertRedirects(response, self.invite, fetch_redirect_response=False)
+        user = User.objects.get(email="ada@example.com")
+        self.assertEqual(self.client.session["_auth_user_id"], str(user.pk))
+
+    def test_next_from_query_string_also_works(self):
+        response = self.client.post(f"/signup/?next={self.invite}", self.data)
+        self.assertRedirects(response, self.invite, fetch_redirect_response=False)
+
+    def test_outside_next_is_ignored(self):
+        for url in [
+            "https://evil.example/", "//evil.example/", "http://evil.example/teams/",
+            "/\\evil.example", "javascript:alert(1)",
+        ]:
+            with self.subTest(url=url):
+                self.client.logout()
+                User.objects.filter(email="ada@example.com").delete()
+                response = self.client.get("/signup/", {"next": url})
+                self.assertNotContains(response, "evil.example")
+                response = self.client.post("/signup/", {**self.data, "next": url})
+                self.assertRedirects(response, "/")
+                self.assertTrue(User.objects.filter(email="ada@example.com").exists())
+
+    def test_login_page_does_not_pass_on_an_outside_next(self):
+        self.assertNotContains(self.client.get("/login/", {"next": "https://evil.example/"}), "evil.example")
+
+    def test_without_next_nothing_changes(self):
+        self.assertNotContains(self.client.get("/signup/"), 'name="next"')
+        self.assertRedirects(self.client.post("/signup/", self.data), "/")
+
+
 class LoginLogoutTests(TestCase):
     @classmethod
     def setUpTestData(cls):
