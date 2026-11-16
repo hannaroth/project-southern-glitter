@@ -42,7 +42,8 @@ def signup(request, pk):
         if form.is_valid():
             with transaction.atomic():
                 # Lock the dinner so two requests by the same person can't both create a team.
-                Dinner.objects.select_for_update().get(pk=dinner.pk)
+                # Use the freshly locked row, so a team_cap change by an admin is never missed.
+                dinner = Dinner.objects.select_for_update().get(pk=dinner.pk)
                 existing = active_team_for(request.user, dinner)
                 if existing:
                     messages.info(request, "You already have a team for this dinner.")
