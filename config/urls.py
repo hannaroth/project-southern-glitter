@@ -8,4 +8,5 @@ urlpatterns = [
     path("", include("abtest.urls")),
     path("", HomeView.as_view(), name="home"),
     path("", include("accounts.urls")),
+    path("", include("teams.urls")),
 ]

@@ -6,7 +6,7 @@
       <header><h2>{{ dinner.title }}</h2></header>
       <p><strong>{{ dinner.date|date:"D, M j, Y" }}</strong></p>
       <p>Theme: {{ dinner.theme }}</p>
-      <p>After-party: {{ dinner.after_party_place }}</p>
+      <p>After-party: {{ dinner.after_party_name }}</p>
     </article>
   {% empty %}
     <p>No upcoming dinners yet. Check back soon.</p>

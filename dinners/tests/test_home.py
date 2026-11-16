@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -9,12 +9,18 @@ from dinners.models import Dinner
 
 
 def make(title, days, **kw):
+    date = timezone.localdate() + timedelta(days=days)
     return Dinner.objects.create(
         title=title,
         theme=kw.get("theme", "Any theme"),
-        date=timezone.localdate() + timedelta(days=days),
-        after_party_place=kw.get("after_party_place", "Some Bar"),
+        date=date,
+        starter_time=time(18, 0),
+        main_time=time(19, 30),
+        dessert_time=time(21, 0),
+        after_party_name=kw.get("after_party_name", "Some Bar"),
+        after_party_address=kw.get("after_party_address", "1 Test Street"),
         team_cap=kw.get("team_cap", 10),
+        signup_deadline=timezone.make_aware(datetime.combine(date - timedelta(days=2), time(23, 59))),
     )
 
 
@@ -44,7 +50,7 @@ class HomeDinnerListTests(TestCase):
         self.assertLess(content.index("A Tomorrow"), content.index("C Next Week"))
 
     def test_shows_title_date_theme_after_party(self):
-        d = make("Around the World", 3, theme="Cuisines", after_party_place="Toad's Place")
+        d = make("Around the World", 3, theme="Cuisines", after_party_name="Toad's Place")
         response = self.client.get("/")
         self.assertContains(response, "Around the World")
         self.assertContains(response, "Cuisines")
