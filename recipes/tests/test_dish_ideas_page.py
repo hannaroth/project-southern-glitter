@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from recipes.diet import ALLERGY_NOTE
 from recipes.models import Recipe
-from recipes.openrouter import MissingAPIKey
+from recipes.openrouter import InvalidJSONReply, MissingAPIKey
 from teams.models import Team
 from teams.tests.helpers import make_dinner, make_user
 
@@ -264,6 +264,13 @@ class FallbackTests(PageTestBase):
         self.login()
         with patch("recipes.ai.chat_json", side_effect=MissingAPIKey("no key")):
             response = self.client.post(self.url, {"suggest": "1"})
+        self.assertContains(response, NOTICE)
+
+    def test_invalid_json_retried_then_fallback(self):
+        self.login()
+        with patch("recipes.ai.chat_json", side_effect=InvalidJSONReply("bad")) as chat:
+            response = self.client.post(self.url, {"suggest": "1"})
+        self.assertEqual(chat.call_count, 2)
         self.assertContains(response, NOTICE)
 
     def test_unexpected_error_no_500(self):

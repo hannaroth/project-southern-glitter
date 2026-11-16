@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from django.test import SimpleTestCase
 
 from recipes import openrouter
-from recipes.openrouter import OpenRouterError, chat_json
+from recipes.openrouter import InvalidJSONReply, OpenRouterError, chat_json
 
 
 def fake_response(content):
@@ -60,14 +60,14 @@ class ChatJsonTests(SimpleTestCase):
         with env(OPENROUTER_API_KEY="k"), patch(
             "urllib.request.urlopen", return_value=fake_response("not json")
         ):
-            with self.assertRaises(OpenRouterError):
+            with self.assertRaises(InvalidJSONReply):
                 chat_json([])
 
     def test_json_but_not_an_object(self):
         with env(OPENROUTER_API_KEY="k"), patch(
             "urllib.request.urlopen", return_value=fake_response("[1, 2]")
         ):
-            with self.assertRaises(OpenRouterError):
+            with self.assertRaises(InvalidJSONReply):
                 chat_json([])
 
     def test_unexpected_payload_shape(self):
@@ -75,8 +75,9 @@ class ChatJsonTests(SimpleTestCase):
         response.read.return_value = b'{"error": "nope"}'
         response.__enter__.return_value = response
         with env(OPENROUTER_API_KEY="k"), patch("urllib.request.urlopen", return_value=response):
-            with self.assertRaises(OpenRouterError):
+            with self.assertRaises(OpenRouterError) as ctx:
                 chat_json([])
+        self.assertNotIsInstance(ctx.exception, InvalidJSONReply)
 
     def test_http_error(self):
         error = urllib.error.HTTPError("u", 500, "boom", {}, None)

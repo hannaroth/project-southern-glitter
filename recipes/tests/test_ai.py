@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from recipes import ai
 from recipes.models import Recipe
-from recipes.openrouter import MissingAPIKey, OpenRouterError
+from recipes.openrouter import InvalidJSONReply, MissingAPIKey, OpenRouterError
 
 NOTICE = "AI unavailable, here are matching recipes"
 
@@ -58,6 +58,19 @@ class SuggestDishesTests(TestCase):
         self.assertEqual(chat.call_count, 2)
         self._assert_fallback(result)
 
+    def test_invalid_json_reply_retried_once_then_fallback(self):
+        with patch("recipes.ai.chat_json", side_effect=InvalidJSONReply("bad")) as chat:
+            result = call()
+        self.assertEqual(chat.call_count, 2)
+        self._assert_fallback(result)
+
+    def test_invalid_json_then_valid_reply_succeeds(self):
+        side_effect = [InvalidJSONReply("bad"), good_reply(self.recipes)]
+        with patch("recipes.ai.chat_json", side_effect=side_effect) as chat:
+            result = call()
+        self.assertEqual(chat.call_count, 2)
+        self.assertTrue(result.ai_used)
+
     def test_retry_can_succeed(self):
         replies = [{"oops": 1}, good_reply(self.recipes)]
         with patch("recipes.ai.chat_json", side_effect=replies) as chat:
@@ -101,8 +114,9 @@ class SuggestDishesTests(TestCase):
         self._assert_fallback(result)
 
     def test_openrouter_error_falls_back(self):
-        with patch("recipes.ai.chat_json", side_effect=OpenRouterError("timeout")):
+        with patch("recipes.ai.chat_json", side_effect=OpenRouterError("timeout")) as chat:
             self._assert_fallback(call())
+        self.assertEqual(chat.call_count, 1)
 
     def test_fewer_than_three_candidates_skips_llm(self):
         Recipe.objects.filter(pk__in=[r.pk for r in self.recipes[2:]]).delete()

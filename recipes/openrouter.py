@@ -14,6 +14,10 @@ class OpenRouterError(Exception):
     """OpenRouter could not give us a usable JSON object."""
 
 
+class InvalidJSONReply(OpenRouterError):
+    """The model's reply content was not a JSON object."""
+
+
 class MissingAPIKey(OpenRouterError):
     """OPENROUTER_API_KEY is not set."""
 
@@ -44,13 +48,16 @@ def chat_json(messages, *, model=None):
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
             payload = json.loads(response.read().decode("utf-8"))
         content = payload["choices"][0]["message"]["content"]
-        result = json.loads(content)
     except urllib.error.HTTPError as exc:
         raise OpenRouterError(f"OpenRouter returned HTTP {exc.code}") from exc
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise OpenRouterError(f"OpenRouter request failed: {type(exc).__name__}") from exc
     except (ValueError, KeyError, IndexError, TypeError) as exc:
-        raise OpenRouterError("OpenRouter reply was not a JSON object") from exc
+        raise OpenRouterError("OpenRouter reply had an unexpected format") from exc
+    try:
+        result = json.loads(content)
+    except (ValueError, TypeError) as exc:
+        raise InvalidJSONReply("OpenRouter reply was not a JSON object") from exc
     if not isinstance(result, dict):
-        raise OpenRouterError("OpenRouter reply was not a JSON object")
+        raise InvalidJSONReply("OpenRouter reply was not a JSON object")
     return result

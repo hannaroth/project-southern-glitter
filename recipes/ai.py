@@ -10,7 +10,7 @@ import random
 from dataclasses import dataclass, field
 
 from .models import Recipe
-from .openrouter import OpenRouterError, chat_json
+from .openrouter import InvalidJSONReply, OpenRouterError, chat_json
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +141,9 @@ def suggest_dishes(*, course, theme, restrictions, wish="", exclude_ids=()):
     for _attempt in range(2):
         try:
             reply = chat_json(messages)
+        except InvalidJSONReply:
+            logger.warning("AI dish ideas: reply was not valid JSON")
+            continue
         except OpenRouterError as exc:
             logger.warning("AI dish ideas unavailable: %s", exc)
             return _fallback(candidates)
