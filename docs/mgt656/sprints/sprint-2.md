@@ -43,4 +43,5 @@ Production: https://yale-running-dinner.onrender.com
 - Dish ideas are one-click suggestions from our own recipes, not a chat, so they can't invent recipes and are easy to test.
 - Cancelling before the matching (#15) moved to Sprint 3, to keep the last day for production and documentation.
 - We added a look-and-feel story (#52) after our smoke test: everything worked, but the design was very minimal. It goes at the start of Sprint 3, once Sprint 2's pull requests are merged, so it doesn't conflict with them.
-- Planned for Sprint 3: matching teams when sign-ups close (#17, with #29–#34), the My Dinner page with the timed address reveal (#18), dish ideas for the actual guests once matching exists, and the design pass (#52).
+- We found TheMealDB's recipes are often adapted rather than authentic (its carbonara uses bacon). We added #61 for Sprint 3: an AI-generated recipe set with diet tags set by our code, an automatic second check and a clear disclaimer, with TheMealDB as the fallback. We decided against scraping recipe sites (their terms forbid it) and against reviewing every recipe by hand (too much time).
+- Planned for Sprint 3: matching teams when sign-ups close (#17, with #29–#34), the My Dinner page with the timed address reveal (#18), dish ideas for the actual guests once matching exists, the design pass (#52) and the AI-generated recipe set (#61).
