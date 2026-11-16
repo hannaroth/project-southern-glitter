@@ -322,3 +322,35 @@ class TeamPageLinkTests(PageTestBase):
         self.login()
         response = self.client.get(reverse("teams:detail", kwargs={"pk": self.team.pk}))
         self.assertNotContains(response, "Get dish ideas")
+
+    def test_no_link_for_admin_who_is_not_a_member(self):
+        admin = make_user("boss2@example.com", is_staff=True)
+        self.login(admin)
+        response = self.client.get(reverse("teams:detail", kwargs={"pk": self.team.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Get dish ideas")
+
+    def test_link_for_partner(self):
+        self.login(self.partner)
+        response = self.client.get(reverse("teams:detail", kwargs={"pk": self.team.pk}))
+        self.assertContains(response, "Get dish ideas")
+
+
+class FewCandidatesNoticeTests(PageTestBase):
+    def test_few_candidates_show_own_notice_and_skip_ai(self):
+        Recipe.objects.exclude(pk__in=[r.pk for r in self.recipes[:2]]).delete()
+        self.login()
+        with patch("recipes.ai.chat_json") as chat:
+            response = self.client.post(self.url, {"suggest": "1"})
+        chat.assert_not_called()
+        self.assertContains(response, "Only a few recipes match")
+        self.assertNotContains(response, NOTICE)
+
+    def test_zero_candidates_no_ai_unavailable(self):
+        Recipe.objects.all().delete()
+        self.login()
+        with patch("recipes.ai.chat_json") as chat:
+            response = self.client.post(self.url, {"suggest": "1"})
+        chat.assert_not_called()
+        self.assertContains(response, "No matching recipes found")
+        self.assertNotContains(response, NOTICE)

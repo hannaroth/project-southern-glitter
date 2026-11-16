@@ -9,6 +9,7 @@ from recipes.models import Recipe
 from recipes.openrouter import InvalidJSONReply, MissingAPIKey, OpenRouterError
 
 NOTICE = "AI unavailable, here are matching recipes"
+FEW_NOTICE = ai.FEW_RECIPES_NOTICE
 
 
 def make(n, course="main", tags=(), title=None, ingredients=("salt", "rice")):
@@ -125,7 +126,24 @@ class SuggestDishesTests(TestCase):
         chat.assert_not_called()
         self.assertEqual(len(result.ideas), 2)
         self.assertFalse(result.ai_used)
-        self.assertEqual(result.notice, NOTICE)
+        self.assertEqual(result.notice, FEW_NOTICE)
+        self.assertNotEqual(result.notice, NOTICE)
+
+    def test_one_candidate_uses_few_recipes_notice(self):
+        Recipe.objects.filter(pk__in=[r.pk for r in self.recipes[1:]]).delete()
+        with patch("recipes.ai.chat_json") as chat:
+            result = call()
+        chat.assert_not_called()
+        self.assertEqual(len(result.ideas), 1)
+        self.assertEqual(result.notice, FEW_NOTICE)
+
+    def test_zero_candidates_has_no_ai_notice(self):
+        Recipe.objects.all().delete()
+        with patch("recipes.ai.chat_json") as chat:
+            result = call()
+        chat.assert_not_called()
+        self.assertEqual(result.ideas, [])
+        self.assertEqual(result.notice, "")
 
     def _assert_fallback(self, result):
         self.assertFalse(result.ai_used)

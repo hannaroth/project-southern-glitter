@@ -22,6 +22,7 @@ WISH_MAX_LENGTH = 200
 TOTAL_BUDGET_SECONDS = 25
 MIN_RETRY_SECONDS = 5
 FALLBACK_NOTICE = "AI unavailable, here are matching recipes"
+FEW_RECIPES_NOTICE = "Only a few recipes match these restrictions, so here they are without AI suggestions."
 
 # restriction key -> (required tag, excluded tag)
 REQUIRED_TAGS = {"vegetarian": "vegetarian", "vegan": "vegan"}
@@ -121,7 +122,7 @@ def validate_reply(reply, candidates):
     return picked, [s.strip() for s in shopping if s.strip()]
 
 
-def _fallback(candidates):
+def _fallback(candidates, notice=FALLBACK_NOTICE):
     chosen = random.sample(candidates, min(IDEA_COUNT, len(candidates)))
     shopping, seen = [], set()
     for recipe in chosen:
@@ -133,14 +134,14 @@ def _fallback(candidates):
         ideas=[DishIdea(recipe=r) for r in chosen],
         shopping_list=shopping,
         ai_used=False,
-        notice=FALLBACK_NOTICE,
+        notice=notice,
     )
 
 
 def suggest_dishes(*, course, theme, restrictions, wish="", exclude_ids=()):
     candidates = get_candidates(course, restrictions, exclude_ids)
     if len(candidates) < IDEA_COUNT:
-        return _fallback(candidates)
+        return _fallback(candidates, notice=FEW_RECIPES_NOTICE if candidates else "")
     messages = build_messages(candidates, course, theme, restrictions, wish)
     started = time.monotonic()
     for attempt in range(2):
