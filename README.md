@@ -94,3 +94,29 @@ On Render, `RENDER_EXTERNAL_HOSTNAME` is added to the allowed hosts and trusted 
 - Build command: `./build.sh` (installs requirements, collects static files, runs migrations)
 - Start command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
 - Environment: `DATABASE_URL`, `SECRET_KEY`, and leave `DEBUG` unset.
+
+## Deploying to production
+
+We have two Render services with separate Neon databases:
+
+| Environment | Deploys | When |
+|---|---|---|
+| Staging | branch `main` | automatically, on every merge |
+| Production | branch `production` | only when someone runs **Promote to production** |
+
+Nobody pushes to `production` by hand. To deploy, run the **Promote to production** workflow (`.github/workflows/promote.yml`):
+
+- **In the browser:** repo → **Actions** tab → **Promote to production** (left list) → **Run workflow** → leave "Commit" empty for the latest `main` → **Run workflow**.
+- **From a terminal:** `gh workflow run promote.yml` (or `gh workflow run promote.yml -f sha=<commit>` for a specific commit on `main`).
+
+The workflow refuses to promote unless:
+
+1. the commit is on `main`,
+2. the **tests** check passed on that commit (if CI is still running, wait and run it again), and
+3. `production` can move forward to it (fast-forward only, never a force-push; promoting an older commit than the one live is refused).
+
+It then pushes the commit to `production`, and Render deploys it within a few minutes. The run's summary page shows which commit was promoted and what was live before. The same checks live in `scripts/promote.sh`, which the workflow calls.
+
+After promoting, check production: the home page, both grader logins, and `/c6a680e/stats`.
+
+If anyone protects the `production` branch later, allow GitHub Actions to push to it, or the workflow will fail at the push step.

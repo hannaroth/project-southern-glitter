@@ -1,0 +1,107 @@
+# "Promote to production": the deliberate step that deploys a tested commit.
+# Staging deploys every merge to main; production deploys the `production` branch,
+# which only this workflow moves. See README, "Deploying to production".
+#
+# Run it: Actions tab -> "Promote to production" -> Run workflow,
+# or `gh workflow run promote.yml` (add `-f sha=<commit>` to pick an older commit).
+name: Promote to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit on main to promote (leave empty for the latest main)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write # push to the production branch
+  checks: read # read the "tests" result for the commit
+
+# Never run two promotions at once.
+concurrency:
+  group: promote-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Pick the commit
+        id: pick
+        env:
+          INPUT_SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$INPUT_SHA" ]; then
+            SHA="$(git rev-parse origin/main)"
+          else
+            SHA="$(git rev-parse --verify --quiet "${INPUT_SHA}^{commit}")" \
+              || { echo "::error::Unknown commit: $INPUT_SHA"; exit 1; }
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Promoting $SHA: $(git log -1 --format=%s "$SHA")"
+
+      - name: Check that the tests passed on that commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.pick.outputs.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # The newest "tests" run on this commit (CI runs on every push to main).
+          RESULT="$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=tests&filter=latest" \
+            --jq '.check_runs[0] // {} | "\(.status // "none") \(.conclusion // "none")"')"
+          echo "tests check: $RESULT"
+          case "$RESULT" in
+            "completed success") ;;
+            "none none") echo "::error::No 'tests' check found on $SHA. Only commits that went through CI on main can be promoted."; exit 1 ;;
+            completed*) echo "::error::The 'tests' check failed on $SHA ($RESULT). Fix main first."; exit 1 ;;
+            *) echo "::error::The 'tests' check is still running on $SHA ($RESULT). Wait for it to finish, then run this again."; exit 1 ;;
+          esac
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Push to production (fast-forward only)
+        id: push
+        env:
+          SHA: ${{ steps.pick.outputs.sha }}
+        run: |
+          set -euo pipefail
+          BEFORE="$(git ls-remote --heads origin production | cut -f1)"
+          echo "before=${BEFORE:-none}" >> "$GITHUB_OUTPUT"
+          bash scripts/promote.sh "$SHA"
+
+      - name: Summary
+        if: always()
+        env:
+          SHA: ${{ steps.pick.outputs.sha }}
+          BEFORE: ${{ steps.push.outputs.before }}
+          OUTCOME: ${{ steps.push.outcome }}
+          REPO: ${{ github.repository }}
+          SERVER: ${{ github.server_url }}
+        run: |
+          {
+            echo "## Promote to production"
+            echo
+            if [ "$OUTCOME" = "success" ]; then
+              echo "Promoted [\`${SHA:0:7}\`]($SERVER/$REPO/commit/$SHA) to \`production\`. Render now deploys it automatically (a few minutes)."
+            else
+              echo "Nothing was promoted. See the failed step above for why."
+            fi
+            echo
+            echo "| | Commit |"
+            echo "|---|---|"
+            echo "| Requested | \`${SHA:-none}\` $( [ -n "$SHA" ] && git log -1 --format='%s' "$SHA" 2>/dev/null ) |"
+            echo "| production before | \`${BEFORE:-none}\` |"
+            echo "| Run by | @$GITHUB_ACTOR |"
+          } >> "$GITHUB_STEP_SUMMARY"
