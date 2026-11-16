@@ -128,7 +128,7 @@ VEGETARIAN_WORDS = set("""
  cumin cinnamon nutmeg mace clove cardamom paprika cayenne saffron fenugreek mustard fennel
  caraway aniseed anise star allspice juniper sumac zaatar garam masala curry powder coriander
  seed sesame poppy pepper peppercorn salt spice vanilla extract essence
- rice basmati jasmine arborio risotto paella wild brown wholegrain wholemeal wheat bulgur couscous
+ rice basmati jasmine arborio wild brown wholegrain wholemeal wheat bulgur couscous
  quinoa barley oat oats oatmeal porridge millet polenta cornmeal semolina cornflour cornstarch
  starch flour plain self raising strong bread rye spelt gram chickpea besan tapioca arrowroot
  lentil split red puy chickpea hummus houmous black eyed borlotti cannellini haricot kidney
@@ -144,7 +144,7 @@ VEGETARIAN_WORDS = set("""
  yoghurt kefir buttermilk custard ghee margarine
  egg yolk white honey chocolate cocoa cacao carob
  pasta spaghetti penne fusilli farfalle linguine fettuccine tagliatelle rigatelle rigatoni
- macaroni lasagne lasagna orzo vermicelli noodle gnocchi udon soba ramen
+ macaroni orzo vermicelli noodle gnocchi udon soba
  rice paper wrapper wrap pitta pita naan chapati roti baguette ciabatta focaccia sourdough
  brioche bun bagel crumpet muffin toast breadcrumb panko crouton pastry dough sheet
  water ice sparkling mineral boiling hot cold warm
@@ -176,7 +176,7 @@ VEGETARIAN_WORDS -= {
     "wrapper", "wrap", "ice",
 }
 VEGETARIAN_PHRASES |= {
-    "pudding rice", "granny smith", "cox", "conference", "wild rice", "red kidney bean", "wild garlic", "artichoke heart", "cavolo nero", "bean sprout", "pak choi",
+    "pudding rice", "risotto rice", "paella rice", "lasagne sheet", "lasagna sheet", "ramen noodle", "granny smith", "cox", "conference", "wild rice", "red kidney bean", "wild garlic", "artichoke heart", "cavolo nero", "bean sprout", "pak choi",
     "bok choy", "sun dried tomato", "sundried tomato", "greek yogurt", "greek yoghurt",
 }
 

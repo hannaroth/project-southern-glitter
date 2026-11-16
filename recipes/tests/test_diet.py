@@ -75,7 +75,7 @@ NOT_VEGETARIAN_NAMES = (
 RISKY_WORDS = (
     "Ravioli", "Tortellini", "Fresh Tortellini", "Spring Roll", "Spring Rolls", "Egg Roll",
     "Sweet Bread", "Kimchi", "Tortilla", "Flour Tortilla", "Miso", "Miso Paste", "Sea Cucumber",
-    "Cider", "Ground", "Smoked", "Fresh",
+    "Cider", "Ground", "Smoked", "Fresh", "Paella", "Risotto", "Ramen", "Lasagne", "Lasagna",
 )
 
 
