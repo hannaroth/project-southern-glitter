@@ -1,0 +1,28 @@
+"""Business rules for teams (docs/sprint-2-plan.md, section 5.3)."""
+
+from django.db.models import Q
+from django.utils import timezone
+
+from .models import Team
+
+
+def signups_open(dinner):
+    """Sign-ups, invite accepts and cancels are allowed until the dinner's deadline."""
+    return timezone.now() < dinner.signup_deadline
+
+
+def active_team_for(user, dinner):
+    """The user's non-cancelled team for this dinner (as creator or partner), or None."""
+    if not user.is_authenticated:
+        return None
+    return (
+        Team.objects.filter(dinner=dinner)
+        .exclude(status=Team.Status.CANCELLED)
+        .filter(Q(creator=user) | Q(partner=user))
+        .first()
+    )
+
+
+def can_see_address(user, team):
+    """A team's address is visible only to its two members and admins."""
+    return user.is_authenticated and (user.is_staff or team.is_member(user))
