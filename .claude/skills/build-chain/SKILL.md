@@ -1,7 +1,7 @@
 ---
 name: build-chain
 description: Build one or more GitHub issues in order (each on top of the previous one when needed), verify each independently and open its pull request.
-argument-hint: [issue numbers in order, e.g. 12 26 27]
+argument-hint: "[issue numbers in order, e.g. 12 26 27]"
 disable-model-invocation: true
 ---
 

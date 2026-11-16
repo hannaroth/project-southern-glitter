@@ -1,7 +1,7 @@
 ---
 name: sprint-report
 description: Write the sprint report docs/mgt656/sprints/sprint-N.md from GitHub data and open its pull request.
-argument-hint: [sprint number, then optionally each person's agent lesson, e.g. 2 "Jason: ..."]
+argument-hint: "[sprint number, then optionally agent lessons, e.g. 2 'Jason: ...']"
 disable-model-invocation: true
 model: haiku
 ---

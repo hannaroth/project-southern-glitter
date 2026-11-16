@@ -1,7 +1,7 @@
 ---
 name: review-pr
 description: Review a teammate's pull request for a given issue with an independent verifier, then approve and merge it or request changes, only on my word.
-argument-hint: [issue number, e.g. 19]
+argument-hint: "[issue number, e.g. 19]"
 disable-model-invocation: true
 ---
 
