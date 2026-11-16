@@ -10,7 +10,15 @@ from dinners.models import Dinner
 
 from .forms import TeamSignupForm
 from .models import Team
-from .services import accept_refusal, active_team_for, can_see_address, signups_open
+from .services import (
+    accept_refusal,
+    active_team_for,
+    assign_status,
+    can_see_address,
+    is_full,
+    signups_open,
+    waitlist_position,
+)
 
 CLOSED_MESSAGE = "Sign-ups for this dinner are closed."
 
@@ -34,7 +42,8 @@ def signup(request, pk):
         if form.is_valid():
             with transaction.atomic():
                 # Lock the dinner so two requests by the same person can't both create a team.
-                Dinner.objects.select_for_update().get(pk=dinner.pk)
+                # Use the freshly locked row, so a team_cap change by an admin is never missed.
+                dinner = Dinner.objects.select_for_update().get(pk=dinner.pk)
                 existing = active_team_for(request.user, dinner)
                 if existing:
                     messages.info(request, "You already have a team for this dinner.")
@@ -42,14 +51,23 @@ def signup(request, pk):
                 team = form.save(commit=False)
                 team.dinner = dinner
                 team.creator = request.user
-                # Every team holds a spot until the waitlist (#28) adds assign_status().
-                team.status = Team.Status.REGISTERED
+                # Inside the dinner lock, so two sign-ups can't both take the last spot.
+                assign_status(team)
                 team.save()
-            messages.success(request, "Your team is signed up.")
+            if team.status == Team.Status.WAITLISTED:
+                messages.success(
+                    request,
+                    f"The dinner is full, so your team is on the waitlist "
+                    f"(number {waitlist_position(team)}). You'll keep your place in line.",
+                )
+            else:
+                messages.success(request, "Your team is signed up.")
             return redirect("teams:detail", pk=team.pk)
     else:
         form = TeamSignupForm()
-    return render(request, "teams/signup.html", {"dinner": dinner, "form": form})
+    return render(
+        request, "teams/signup.html", {"dinner": dinner, "form": form, "full": is_full(dinner)}
+    )
 
 
 @login_required
@@ -74,6 +92,7 @@ def detail(request, pk):
             "dinner": team.dinner,
             "invite_url": invite_url,
             "signups_open": signups_open(team.dinner),
+            "waitlist_position": waitlist_position(team),
         },
     )
 

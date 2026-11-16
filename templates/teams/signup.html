@@ -7,6 +7,9 @@
     <p>Sign-ups for this dinner are closed. The deadline was {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
   {% else %}
     <p>Sign up now; you'll invite your partner from your team page. Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
+    {% if full %}
+      <p id="full-notice" role="note"><strong>This dinner is full.</strong> If you sign up, your team joins the waitlist in sign-up order.</p>
+    {% endif %}
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}

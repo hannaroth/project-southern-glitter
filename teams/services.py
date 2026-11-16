@@ -28,6 +28,44 @@ def can_see_address(user, team):
     return user.is_authenticated and (user.is_staff or team.is_member(user))
 
 
+def registered_count(dinner, *, exclude=None):
+    """Non-cancelled teams holding one of the dinner's `team_cap` spots."""
+    teams = Team.objects.filter(dinner=dinner, status=Team.Status.REGISTERED)
+    if exclude is not None and exclude.pk is not None:
+        teams = teams.exclude(pk=exclude.pk)
+    return teams.count()
+
+
+def is_full(dinner):
+    """True once every spot is taken, so the next team goes on the waitlist."""
+    return registered_count(dinner) >= dinner.team_cap
+
+
+def assign_status(team):
+    """Waitlist (#28): set and return the status of a team being created.
+
+    REGISTERED while fewer than `team_cap` teams hold a spot, otherwise WAITLISTED.
+    A team holds its spot from sign-up, before its partner accepts (decided Nov 15).
+    Call it inside the sign-up transaction that locks the dinner row, so two
+    sign-ups can't both take the last spot.
+    """
+    if registered_count(team.dinner, exclude=team) < team.dinner.team_cap:
+        team.status = Team.Status.REGISTERED
+    else:
+        team.status = Team.Status.WAITLISTED
+    return team.status
+
+
+def waitlist_position(team):
+    """1-based place on the dinner's waitlist in sign-up order, or None if not waitlisted."""
+    if team.status != Team.Status.WAITLISTED:
+        return None
+    ahead = Team.objects.filter(dinner_id=team.dinner_id, status=Team.Status.WAITLISTED).filter(
+        Q(created_at__lt=team.created_at) | Q(created_at=team.created_at, id__lt=team.id)
+    )
+    return ahead.count() + 1
+
+
 def accept_refusal(user, team):
     """Why `user` may not accept `team`'s partner invite, or None if they may."""
     if team.status == Team.Status.CANCELLED:
