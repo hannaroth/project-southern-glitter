@@ -5,6 +5,10 @@
   <p><strong>{{ dinner.title }}</strong> · {{ dinner.date|date:"D, M j, Y" }}</p>
   <article>
     <p><strong>Status:</strong> {{ team.get_status_display }}</p>
+    {% if waitlist_position %}
+      <p id="waitlist"><strong>Waitlist position:</strong> {{ waitlist_position }}.
+        The dinner is full ({{ dinner.team_cap }} team{{ dinner.team_cap|pluralize }}), so you're in line in sign-up order and keep your place.</p>
+    {% endif %}
     <p><strong>Signed up by:</strong> {{ team.creator.display_name }}</p>
     <p><strong>Partner:</strong>
       {% if team.partner %}{{ team.partner.display_name }}{% else %}Not joined yet{% endif %}

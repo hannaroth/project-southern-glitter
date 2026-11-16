@@ -8,7 +8,14 @@ from dinners.models import Dinner
 
 from .forms import TeamSignupForm
 from .models import Team
-from .services import active_team_for, can_see_address, signups_open
+from .services import (
+    active_team_for,
+    assign_status,
+    can_see_address,
+    is_full,
+    signups_open,
+    waitlist_position,
+)
 
 CLOSED_MESSAGE = "Sign-ups for this dinner are closed."
 
@@ -40,14 +47,23 @@ def signup(request, pk):
                 team = form.save(commit=False)
                 team.dinner = dinner
                 team.creator = request.user
-                # Every team holds a spot until the waitlist (#28) adds assign_status().
-                team.status = Team.Status.REGISTERED
+                # Inside the dinner lock, so two sign-ups can't both take the last spot.
+                assign_status(team)
                 team.save()
-            messages.success(request, "Your team is signed up.")
+            if team.status == Team.Status.WAITLISTED:
+                messages.success(
+                    request,
+                    f"The dinner is full, so your team is on the waitlist "
+                    f"(number {waitlist_position(team)}). You'll keep your place in line.",
+                )
+            else:
+                messages.success(request, "Your team is signed up.")
             return redirect("teams:detail", pk=team.pk)
     else:
         form = TeamSignupForm()
-    return render(request, "teams/signup.html", {"dinner": dinner, "form": form})
+    return render(
+        request, "teams/signup.html", {"dinner": dinner, "form": form, "full": is_full(dinner)}
+    )
 
 
 @login_required
@@ -56,4 +72,8 @@ def detail(request, pk):
     # The "our team" page is for the team's members and admins only.
     if not can_see_address(request.user, team):
         raise Http404
-    return render(request, "teams/detail.html", {"team": team, "dinner": team.dinner})
+    return render(
+        request,
+        "teams/detail.html",
+        {"team": team, "dinner": team.dinner, "waitlist_position": waitlist_position(team)},
+    )
