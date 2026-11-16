@@ -3,6 +3,8 @@ MGT 656 team project (team southern-glitter)
 
 A running-dinner web app for Yale and New Haven. Teams of two sign up for a dinner, each team hosts one course and eats the other two at other teams' homes, and everyone meets at an after-party.
 
+Live app: **production** https://yale-running-dinner.onrender.com · **staging** https://running-dinner-staging.onrender.com
+
 Stack: Django 5.2 and PostgreSQL, server-rendered pages styled with [Pico CSS](https://picocss.com). Hosting: Render (app) and Neon (database). The rules for AI agents are in `AGENTS.md`; the backlog is in `docs/backlog.md`.
 
 ## Run it locally
@@ -99,10 +101,10 @@ On Render, `RENDER_EXTERNAL_HOSTNAME` is added to the allowed hosts and trusted 
 
 We have two Render services with separate Neon databases:
 
-| Environment | Deploys | When |
-|---|---|---|
-| Staging | branch `main` | automatically, on every merge |
-| Production | branch `production` | only when someone runs **Promote to production** |
+| Environment | URL | Deploys | When |
+|---|---|---|---|
+| Staging | https://running-dinner-staging.onrender.com | branch `main` | automatically, on every merge |
+| Production | https://yale-running-dinner.onrender.com (Render service `yale-running-dinner`) | branch `production` | only when someone runs **Promote to production** |
 
 Nobody pushes to `production` by hand. To deploy, run the **Promote to production** workflow (`.github/workflows/promote.yml`):
 
