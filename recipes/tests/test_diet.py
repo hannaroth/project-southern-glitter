@@ -72,6 +72,13 @@ NOT_VEGETARIAN_NAMES = (
 )
 
 
+RISKY_WORDS = (
+    "Ravioli", "Tortellini", "Fresh Tortellini", "Spring Roll", "Spring Rolls", "Egg Roll",
+    "Sweet Bread", "Kimchi", "Tortilla", "Flour Tortilla", "Miso", "Miso Paste", "Sea Cucumber",
+    "Cider", "Ground", "Smoked", "Fresh",
+)
+
+
 class DerivedVegetarianTests(SimpleTestCase):
     def test_every_risky_name_blocks_alone_and_with_others(self):
         for category in ("Miscellaneous", "Dessert", "Starter"):
@@ -116,9 +123,20 @@ class DerivedVegetarianTests(SimpleTestCase):
                     "Rosemary", "Sea Salt", "Black Pepper")
         self.assertEqual(tags("Dessert", *sponge), ["vegetarian", "contains_gluten", "contains_dairy"])
         self.assertEqual(tags("Dessert", *mousse), ["vegetarian", "contains_dairy"])
-        self.assertEqual(tags("Starter", *bruschetta), ["vegetarian", "vegan"])
-        self.assertEqual(tags("Starter", *hummus), ["vegetarian", "vegan"])
-        self.assertEqual(tags("Side", *veg_side), ["vegetarian", "vegan"])
+        tomato_soup = ("Tomatoes", "Onion", "Garlic", "Vegetable Stock", "Olive Oil", "Basil")
+        pancakes = ("Plain Flour", "Milk", "Eggs", "Sunflower Oil", "Caster Sugar", "Lemon Juice")
+        crumble = ("Bramley Apples", "Granny Smith Apples", "Plain Flour", "Butter", "Demerara Sugar")
+        rice_pudding = ("Pudding Rice", "Milk", "Double Cream", "Caster Sugar", "Nutmeg")
+        roasted = ("Sweet Potatoes", "Spring Onions", "Red Pepper", "Olive Oil", "Sea Salt")
+        self.assertEqual(tags("Starter", *bruschetta), ["vegetarian"])
+        self.assertEqual(tags("Starter", *hummus), ["vegetarian"])
+        self.assertEqual(tags("Side", *veg_side), ["vegetarian"])
+        self.assertIn("vegetarian", tags("Starter", *tomato_soup))
+        self.assertIn("vegetarian", tags("Dessert", *pancakes))
+        self.assertIn("vegetarian", tags("Dessert", *crumble))
+        self.assertIn("vegetarian", tags("Dessert", *rice_pudding))
+        self.assertIn("vegetarian", tags("Side", *roasted))
+        self.assertNotIn("vegetarian", tags("Starter", "Tomato", "Black Pudding"))
 
     def test_veto_still_applies_with_known_words(self):
         # "Rendang" is on the meat list; every word of "Rendang Spice" would otherwise be unknown anyway.
@@ -132,18 +150,21 @@ class DerivedVegetarianTests(SimpleTestCase):
     def test_no_ingredients_is_not_vegetarian(self):
         self.assertEqual(tags("Starter"), [])
 
-    def test_vegan_rules(self):
-        self.assertEqual(tags("Starter", "Tomato", "Olive Oil"), ["vegetarian", "vegan"])
+    def test_vegan_only_from_category(self):
+        for names in (("Tomato", "Olive Oil"), ("Chickpeas", "Tahini"), ("Tomato", "Coconut Milk")):
+            self.assertEqual(tags("Starter", *names), ["vegetarian"])
         self.assertEqual(tags("Starter", "Tomato", "Eggs"), ["vegetarian"])
-        self.assertEqual(tags("Starter", "Tomato", "Egg Yolks"), ["vegetarian"])
-        self.assertEqual(tags("Dessert", "Oats", "Honey"), ["vegetarian", "contains_gluten"])
-        self.assertEqual(tags("Starter", "Tomato", "Mayonnaise"), ["vegetarian"])
+        self.assertEqual(tags("Vegan", "Tomato", "Eggs"), ["vegetarian", "vegan"])
         self.assertEqual(tags("Starter", "Tomato", "Feta"), ["vegetarian", "contains_dairy"])
-        self.assertEqual(tags("Starter", "Tomato", "Ghee"), ["vegetarian", "contains_dairy"])
-        self.assertEqual(tags("Starter", "Tomato", "Coconut Milk"), ["vegetarian", "vegan"])
-        self.assertEqual(tags("Starter", "Tomato", "Puff Pastry"), ["vegetarian", "contains_gluten"])
-        self.assertEqual(tags("Starter", "Tomato", "Milk Chocolate"), ["vegetarian", "contains_dairy"])
-        self.assertEqual(tags("Starter", "Tomato", "White Chocolate"), ["vegetarian"])
+        self.assertEqual(tags("Starter", "Tomato", "Parmesan"), ["vegetarian", "contains_dairy"])
+        self.assertIn("vegetarian", tags("Starter", "Tomato", "Gruyere", "Pecorino"))
+
+    def test_risky_additions_never_vegetarian(self):
+        for n in RISKY_WORDS:
+            for other in ([], ["Onion", "Garlic", "Olive Oil", "Tomatoes"]):
+                t = tags("Starter", *other, n)
+                self.assertNotIn("vegetarian", t, (n, other))
+                self.assertNotIn("vegan", t, (n, other))
 
     def test_category_rules_unchanged(self):
         self.assertEqual(tags("Vegan", "Eggs"), ["vegetarian", "vegan"])
@@ -177,5 +198,5 @@ class RetagMigrationTests(TestCase):
         migration.recompute_diet_tags(apps, None)
         starter.refresh_from_db()
         meaty.refresh_from_db()
-        self.assertEqual(starter.diet_tags, ["vegetarian", "vegan"])
+        self.assertEqual(starter.diet_tags, ["vegetarian"])
         self.assertEqual(meaty.diet_tags, [])

@@ -82,9 +82,6 @@ MEAT_FISH_KEYWORDS = [
 ]
 # Phrases removed before the meat check, so they cannot trigger a keyword.
 MEAT_SAFE_PHRASES = ["kidney bean", "kidney beans", "butternut", "coconut"]
-EGG_HONEY_KEYWORDS = [
-    "egg", "egg yolk", "egg white", "honey", "mayonnaise", "mayo", "ghee",
-]
 
 
 # Allowlist for the ingredient path: an ingredient counts as known vegetarian only if it is one of
@@ -108,38 +105,20 @@ VEGETARIAN_PHRASES = {
     "rice vinegar", "sherry vinegar", "balsamic vinegar", "apple cider vinegar", "cider vinegar",
     "vanilla paste", "vanilla bean paste", "salt and pepper", "sea salt", "water chestnut",
     "cranberry sauce", "sweet chilli sauce", "chilli sauce", "hot sauce", "tahini paste",
-    "sesame paste", "miso paste", "almond paste", "bean paste", "rice paper", "spring roll wrapper",
+    "sesame paste", "almond paste", "bean paste", "rice paper",
     "mixed spice", "mixed peel", "mixed herbs", "mixed nuts", "mixed seeds", "mixed vegetables",
 }
-VEGAN_OK_PHRASES = {
-    "coconut milk", "coconut cream", "peanut butter", "almond butter", "cocoa butter", "almond milk",
-    "soy milk", "soya milk", "oat milk", "rice milk", "cashew milk", "vegetable stock",
-    "vegetable stock cube", "vegetable broth", "vegetable bouillon", "veggie stock", "vegan stock",
-    "veggie sausage", "vegetarian sausage", "vegan sausage", "vegetarian mince", "vegan mince",
-    "meat free mince", "plant based mince", "vegetable suet", "vegetarian suet", "filo pastry",
-    "phyllo pastry",
-}
-# Extra words that stop the "vegan" tag (the dairy/egg/honey keyword lists apply as well).
-NOT_VEGAN_WORDS = {
-    "milk", "butter", "cream", "cheese", "cheddar", "mozzarella", "parmesan", "parmigiano",
-    "reggiano", "feta", "ricotta", "mascarpone", "gruyere", "halloumi", "paneer", "gouda", "brie",
-    "camembert", "stilton", "emmental", "edam", "cottage", "yogurt", "yoghurt", "kefir", "custard",
-    "ghee", "whey", "casein", "egg", "yolk", "honey", "mayonnaise", "mayo", "buttermilk",
-    "pastry", "puff", "shortcrust", "biscuit", "digestive", "marzipan", "naan", "brioche",
-    "meringue", "cake", "sponge", "ladyfinger", "ice",
-}
-NOT_VEGAN_PHRASES = ("milk chocolate", "white chocolate", "chocolate chip cookie")
 VEGETARIAN_WORDS = set("""
  vegetable veggie vegetarian vegan plant based
  tomato cherry plum sun dried passata ketchup onion shallot garlic clove leek chive chives
- spring scallion potato yam sweet carrot parsnip turnip swede beetroot beet radish celeriac celery
+ scallion potato yam carrot parsnip turnip swede beetroot beet radish celeriac celery
  fennel cabbage savoy kale cavolo nero lettuce rocket arugula watercress spinach chard
  broccoli tenderstem cauliflower courgette zucchini aubergine eggplant pepper capsicum chilli chili
  jalapeno habanero cucumber gherkin pickle pickled caper olive artichoke asparagus pea mangetout
  sugar snap bean broad runner green french edamame sweetcorn corn maize squash butternut pumpkin
  mushroom shiitake portobello chestnut button oyster cep porcini truffle ginger galangal
  lemongrass turmeric horseradish okra avocado
- apple pear peach apricot nectarine cherry plum damson berry strawberry raspberry blueberry
+ apple bramley braeburn pear peach apricot nectarine cherry plum damson berry strawberry raspberry blueberry
  blackberry cranberry gooseberry redcurrant blackcurrant currant grape raisin sultana fig date
  prune banana mango pineapple papaya kiwi melon watermelon orange lemon lime grapefruit
  clementine tangerine satsuma mandarin pomegranate rhubarb coconut tamarind peel zest juice
@@ -157,30 +136,30 @@ VEGETARIAN_WORDS = set("""
  almond walnut pecan cashew pistachio hazelnut macadamia peanut pine nut brazil pinenut
  flaxseed linseed sunflower pumpkin chia hemp
  oil olive sunflower vegetable rapeseed canola groundnut sesame walnut vinegar balsamic
- cider malt
+ malt
  sugar caster icing granulated demerara muscovado treacle syrup molasses agave stevia
  yeast baking soda bicarbonate tartar
  milk butter cream cheese cheddar mozzarella parmesan parmigiano reggiano feta ricotta
- mascarpone gruyere halloumi paneer gouda brie camembert stilton emmental edam cottage yogurt
+ mascarpone gruyere pecorino halloumi paneer gouda brie camembert stilton emmental edam cottage yogurt
  yoghurt kefir buttermilk custard ghee margarine
  egg yolk white honey chocolate cocoa cacao carob
  pasta spaghetti penne fusilli farfalle linguine fettuccine tagliatelle rigatelle rigatoni
- macaroni lasagne lasagna orzo vermicelli noodle gnocchi ravioli tortellini udon soba ramen
- rice paper wrapper tortilla wrap pitta pita naan chapati roti baguette ciabatta focaccia sourdough
- brioche bun roll bagel crumpet muffin toast breadcrumb panko crouton pastry dough sheet
+ macaroni lasagne lasagna orzo vermicelli noodle gnocchi udon soba ramen
+ rice paper wrapper wrap pitta pita naan chapati roti baguette ciabatta focaccia sourdough
+ brioche bun bagel crumpet muffin toast breadcrumb panko crouton pastry dough sheet
  water ice sparkling mineral boiling hot cold warm
  fresh dried ground chopped sliced diced grated shredded crushed minced finely roughly torn
  frozen tinned canned jarred tin can packet large small medium big mini baby thin thick thinly
  red green yellow white black brown golden orange purple pink dark light double single
- unsalted salted extra virgin whole free range ripe sweet hot mild smoked toasted roasted raw
+ unsalted salted extra virgin whole free range ripe hot mild smoked toasted roasted raw
  cooked boiled steamed mixed organic good quality seedless skinless pitted stoned peeled
  unsweetened sweetened low fat full skimmed semi skimmed natural greek style set
- long short thin fine coarse sea table kosher rock flaked flake desiccated
+ long short thin fine coarse table kosher rock flaked flake desiccated
  cup tablespoon teaspoon pinch handful splash dash to taste of and or with for
  bicarbonate soda powder
  sprout sprouts beansprout bean shoot bamboo lotus root water chestnut kohlrabi
  chicory endive radicchio frisee mizuna pak choi bok choy choi pakchoi tatsoi
- tahini miso wasabi nori kimchi
+ tahini wasabi nori
  ketchup mayonnaise mayo
  sultana
 """.split())
@@ -197,10 +176,31 @@ VEGETARIAN_WORDS -= {
     "wrapper", "wrap", "ice",
 }
 VEGETARIAN_PHRASES |= {
-    "wild rice", "red kidney bean", "wild garlic", "artichoke heart", "cavolo nero", "bean sprout", "pak choi",
+    "pudding rice", "granny smith", "cox", "conference", "wild rice", "red kidney bean", "wild garlic", "artichoke heart", "cavolo nero", "bean sprout", "pak choi",
     "bok choy", "sun dried tomato", "sundried tomato", "greek yogurt", "greek yoghurt",
 }
 
+
+# Non-ingredient words: they may sit next to a real ingredient word ("ground cumin", "fresh basil"),
+# but an ingredient made only of these ("Ground", "Smoked", "Fresh") is not known vegetarian.
+MODIFIER_WORDS = set("""
+ fresh dried ground chopped sliced diced grated shredded crushed minced finely roughly torn
+ frozen tinned canned jarred packet large small medium big mini baby thin thick thinly
+ red green yellow white black brown golden purple pink dark light double single
+ unsalted salted extra virgin whole ripe hot mild smoked toasted roasted raw cooked boiled
+ steamed mixed organic quality seedless skinless pitted stoned peeled unsweetened sweetened
+ low full skimmed semi natural greek long short fine coarse flaked flake desiccated
+ pinch handful splash dash tablespoon teaspoon sparkling mineral boiling cold warm
+ leaf leaves stalk sprig bunch herb herbes provence seed powder extract essence peel zest juice
+ plain self raising strong baking free range wild
+""".split())
+# Safe compounds: matched inside a longer ingredient name ("large sweet potatoes") and counted as
+# known vegetarian, although their first word ("sweet", "spring", "sea") is not on the word list.
+SAFE_COMPOUNDS = (
+    "sweet potato", "sweet corn", "sweet paprika", "sweet pepper", "spring onion",
+    "spring greens", "bread roll", "sea salt", "cider vinegar", "apple cider vinegar",
+    "granny smith", "cox apple", "conference pear",
+)
 
 
 def _compile(words):
@@ -213,7 +213,7 @@ _GLUTEN_RE = _compile(GLUTEN_KEYWORDS)
 _DAIRY_RE = _compile(DAIRY_KEYWORDS)
 _NUT_RE = _compile(NUT_KEYWORDS)
 _MEAT_RE = _compile(MEAT_FISH_KEYWORDS)
-_EGG_HONEY_RE = _compile(EGG_HONEY_KEYWORDS)
+_COMPOUND_RE = _compile(SAFE_COMPOUNDS)
 _MEAT_SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(MEAT_SAFE_PHRASES, key=len, reverse=True)))
 _SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(SAFE_PHRASES, key=len, reverse=True)))
 
@@ -262,12 +262,15 @@ def _is_known_phrase(text, phrases):
 
 
 def _is_known_vegetarian(name):
-    """Allowlist: an exact known phrase, or every single word on the known-vegetarian word list."""
+    """Allowlist: an exact known phrase, or every word known and at least one a real ingredient word."""
     text = _normalise(name)
     if _is_known_phrase(text, VEGETARIAN_PHRASES):
         return True
-    words = text.split()
-    return bool(words) and all(_in_set(w, VEGETARIAN_WORDS) for w in words)
+    rest = _COMPOUND_RE.sub(" ", text)
+    words = rest.split()
+    if not text or not all(_in_set(w, VEGETARIAN_WORDS) for w in words):
+        return False
+    return rest != text or any(not _in_set(w, MODIFIER_WORDS) for w in words)
 
 
 def _has_meat(names):
@@ -283,19 +286,6 @@ def _has_meat(names):
 
 def _all_known_vegetarian(names):
     return all(_is_known_vegetarian(n) for n in names)
-
-
-def _vegan_ok(name):
-    text = _normalise(name)
-    if _is_known_phrase(text, VEGAN_OK_PHRASES):
-        return True
-    if any(p in text for p in NOT_VEGAN_PHRASES):
-        return False
-    return not any(_in_set(w, NOT_VEGAN_WORDS) for w in text.split())
-
-
-def _has_egg_or_honey(names):
-    return any(_EGG_HONEY_RE.search((n or "").lower()) for n in names)
 
 
 def course_for_category(category):
@@ -324,10 +314,7 @@ def derive_diet_tags(category, ingredients):
         and not _has_meat(names) and _all_known_vegetarian(names)
     )
     vegetarian = category in ("vegetarian", "vegan") or from_ingredients
-    vegan = category == "vegan" or (
-        from_ingredients and not dairy and not _has_egg_or_honey(names)
-        and all(_vegan_ok(n) for n in names)
-    )
+    vegan = category == "vegan"  # contract 5.4: only TheMealDB's Vegan category
     if vegetarian:
         tags.append(TAG_VEGETARIAN)
     if vegan:
