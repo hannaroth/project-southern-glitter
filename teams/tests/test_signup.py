@@ -75,12 +75,12 @@ class SignupFormTests(TestCase):
         self.assertEqual(team.dietary_notes, "No cilantro")
         self.assertEqual(team.preferred_course, Team.Course.MAIN)
 
-    def test_new_teams_are_registered_even_past_the_team_cap(self):
-        # Until the waitlist (#28) lands, every new team is REGISTERED.
+    def test_new_team_past_the_team_cap_is_waitlisted(self):
+        # The waitlist (#28) replaced "every new team is REGISTERED"; details in test_waitlist.py.
         dinner = make_dinner("Small Feast", team_cap=1)
         Team.objects.create(dinner=dinner, creator=make_user("bo@example.com"), address="x")
         self.client.post(reverse("teams:signup", args=[dinner.pk]), VALID)
-        self.assertEqual(Team.objects.get(creator=self.ann).status, Team.Status.REGISTERED)
+        self.assertEqual(Team.objects.get(creator=self.ann).status, Team.Status.WAITLISTED)
 
     def test_dietary_fields_optional_and_course_defaults(self):
         self.client.post(self.url, {"address": "1 Elm St", "preferred_course": "no_preference"})

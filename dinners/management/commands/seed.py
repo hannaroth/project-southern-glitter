@@ -37,9 +37,9 @@ ACCOUNTS = [
 
 # (title, theme, after-party name, after-party address, team cap, days after the first dinner date)
 DINNERS = [
-    ("Around the World", "Each course from a different country", "After-party: to be announced downtown", "100 Demo Street, New Haven, CT 06510", 12, 0),
+    ("Around the World", "Each course from a different country", "To be announced downtown", "100 Demo Street, New Haven, CT 06510", 12, 0),
     ("Through the Eras", "Each course from a different decade", "Student lounge (demo)", "200 Example Avenue, New Haven, CT 06511", 12, 14),
-    ("No Theme, Just Dinner", "Cook whatever you love", "After-party: place to be announced", "300 Sample Road, New Haven, CT 06520", 9, 28),
+    ("No Theme, Just Dinner", "Cook whatever you love", "Place to be announced", "300 Sample Road, New Haven, CT 06520", 9, 28),
 ]
 
 STARTER_TIME = time(18, 0)

@@ -71,6 +71,22 @@ class SeedTests(TestCase):
         for title in TITLES:
             self.assertContains(home, title)
 
+    def test_after_party_names_have_no_label_prefix(self):
+        # The templates already print "After-party:" in front of the name (#12).
+        run_seed()
+        for name in Dinner.objects.values_list("after_party_name", flat=True):
+            self.assertFalse(name.startswith("After-party"), name)
+
+    def test_old_prefixed_after_party_name_is_fixed_on_next_run(self):
+        run_seed()
+        Dinner.objects.filter(title="Around the World").update(
+            after_party_name="After-party: to be announced downtown"
+        )
+        run_seed()
+        name = Dinner.objects.get(title="Around the World").after_party_name
+        self.assertFalse(name.startswith("After-party"), name)
+        self.assertNotContains(self.client.get("/"), "After-party: After-party")
+
     def test_second_run_changes_nothing(self):
         run_seed()
         before = snapshot()

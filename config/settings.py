@@ -49,8 +49,8 @@ INSTALLED_APPS = [
     "abtest",
     "accounts",
     "dinners",
-    "recipes",
     "teams",
+    "recipes",
 ]
 
 MIDDLEWARE = [
