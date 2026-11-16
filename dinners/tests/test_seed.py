@@ -28,7 +28,10 @@ def run_seed(env=ENV):
 def snapshot():
     return (
         list(User.objects.order_by("pk").values_list("pk", "email", "password", "is_staff", "is_superuser")),
-        list(Dinner.objects.order_by("pk").values_list("pk", "title", "theme", "date", "after_party_place", "team_cap")),
+        list(Dinner.objects.order_by("pk").values_list(
+                "pk", "title", "theme", "date", "starter_time", "main_time", "dessert_time",
+                "after_party_name", "after_party_address", "team_cap", "signup_deadline",
+            )),
     )
 
 
