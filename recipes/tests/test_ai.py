@@ -258,7 +258,7 @@ class VegetarianStarterTests(TestCase):
     def test_vegetarian_dinner_with_starter_host_gets_three_candidates(self):
         from recipes.diet import derive_diet_tags
 
-        for i, name in enumerate(["Tomato", "Cucumber", "Olives", "Bacon"]):
+        for i, name in enumerate(["Tomato", "Cucumber", "Olive Oil", "Bacon"]):
             ingredients = [{"name": name, "measure": "1"}]
             Recipe.objects.create(
                 external_id=f"starter-{i}", title=f"Starter {i}", category="Starter",
