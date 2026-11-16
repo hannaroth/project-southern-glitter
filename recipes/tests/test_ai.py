@@ -195,14 +195,14 @@ class PromptTests(TestCase):
     def test_no_personal_data_in_prompt(self):
         User = get_user_model()
         user = User.objects.create_user(
-            username="ada@example.com", email="ada@example.com", password="x", first_name="Ada"
+            email="ada@example.com", password="x"
         )
         other = User.objects.create_user(
-            username="bob@example.com", email="bob@example.com", password="x", first_name="Bob"
+            email="bob@example.com", password="x"
         )
         address = "12 Fake Street, New Haven"
         messages = self.messages_sent(restrictions=["gluten_free", "nut_allergy"], wish="something spicy")
         text = json.dumps(messages)
-        for secret in (user.email, other.email, "Ada", "Bob", address, "Fake Street"):
+        for secret in (user.email, other.email, address, "Fake Street"):
             self.assertNotIn(secret, text)
         self.assertNotIn("@", text)
