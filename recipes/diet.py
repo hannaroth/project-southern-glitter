@@ -14,6 +14,8 @@ TAG_GLUTEN = "contains_gluten"
 TAG_DAIRY = "contains_dairy"
 TAG_NUTS = "contains_nuts"
 
+MEAT_CATEGORIES = ("beef", "chicken", "lamb", "pork", "seafood", "goat")
+
 # Phrases removed before matching, so they cannot trigger a keyword.
 SAFE_PHRASES = [
     "coconut milk",
@@ -59,6 +61,27 @@ NUT_KEYWORDS = [
 ]
 
 
+MEAT_FISH_KEYWORDS = [
+    "chicken", "beef", "pork", "lamb", "mutton", "veal", "venison", "goat", "duck", "goose",
+    "turkey", "bacon", "ham", "gammon", "sausage", "chorizo", "salami", "pepperoni",
+    "prosciutto", "pancetta", "mince", "minced", "mincemeat", "meat", "liver", "kidney",
+    "oxtail", "lard", "suet", "dripping", "gelatin", "gelatine", "fish", "salmon", "tuna",
+    "cod", "haddock", "hake", "mackerel", "sardine", "anchovy", "anchovie", "prawn", "shrimp",
+    "crab", "lobster", "mussel", "clam", "oyster", "scallop", "squid", "octopus", "calamari",
+    "worcestershire sauce", "stock", "broth", "bouillon",
+]
+# Words that mark an ingredient as meat-free ("Vegetable Stock", "Vegan Mince").
+MEAT_FREE_MARKERS = (
+    "vegetable", "veggie", "vegetarian", "vegan", "meat-free", "meat free", "meatless",
+    "plant-based", "veg stock",
+)
+# Phrases removed before the meat check, so they cannot trigger a keyword.
+MEAT_SAFE_PHRASES = ["kidney bean", "kidney beans", "butternut", "coconut"]
+EGG_HONEY_KEYWORDS = [
+    "egg", "egg yolk", "egg white", "honey", "mayonnaise", "mayo", "ghee",
+]
+
+
 def _compile(words):
     # Whole words, with an optional plural "s"/"es".
     alt = "|".join(re.escape(w) for w in sorted(words, key=len, reverse=True))
@@ -68,6 +91,9 @@ def _compile(words):
 _GLUTEN_RE = _compile(GLUTEN_KEYWORDS)
 _DAIRY_RE = _compile(DAIRY_KEYWORDS)
 _NUT_RE = _compile(NUT_KEYWORDS)
+_MEAT_RE = _compile(MEAT_FISH_KEYWORDS)
+_EGG_HONEY_RE = _compile(EGG_HONEY_KEYWORDS)
+_MEAT_SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(MEAT_SAFE_PHRASES, key=len, reverse=True)))
 _SAFE_RE = re.compile("|".join(re.escape(p) for p in sorted(SAFE_PHRASES, key=len, reverse=True)))
 
 
@@ -82,6 +108,18 @@ def _any(regex, names, free_markers, keep=()):
         not any(m in n.lower() for m in free_markers) and regex.search(_clean(n, keep))
         for n in names
     )
+
+
+def _has_meat(names):
+    return any(
+        not any(m in n.lower() for m in MEAT_FREE_MARKERS)
+        and _MEAT_RE.search(_MEAT_SAFE_RE.sub(" ", (n or "").lower()))
+        for n in names
+    )
+
+
+def _has_egg_or_honey(names):
+    return any(_EGG_HONEY_RE.search((n or "").lower()) for n in names)
 
 
 def course_for_category(category):
@@ -102,13 +140,19 @@ def derive_diet_tags(category, ingredients):
     category = (category or "").strip().lower()
     names = ingredient_names(ingredients)
     tags = []
-    if category in ("vegetarian", "vegan"):
+    dairy = _any(_DAIRY_RE, names, ("dairy-free", "dairy free", "non-dairy"))
+    # Conservative: a wrong "vegetarian" tag is worse than a missing one.
+    vegetarian = category in ("vegetarian", "vegan") or (
+        bool(names) and category not in MEAT_CATEGORIES and not _has_meat(names)
+    )
+    vegan = category == "vegan" or (vegetarian and not dairy and not _has_egg_or_honey(names))
+    if vegetarian:
         tags.append(TAG_VEGETARIAN)
-    if category == "vegan":
+    if vegan:
         tags.append(TAG_VEGAN)
     if _any(_GLUTEN_RE, names, ("gluten-free", "gluten free")):
         tags.append(TAG_GLUTEN)
-    if _any(_DAIRY_RE, names, ("dairy-free", "dairy free", "non-dairy")):
+    if dairy:
         tags.append(TAG_DAIRY)
     if _any(_NUT_RE, names, ("nut-free", "nut free"), keep=_NUT_ONLY_RESTORE):
         tags.append(TAG_NUTS)
