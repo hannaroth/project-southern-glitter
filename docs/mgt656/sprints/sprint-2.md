@@ -41,4 +41,5 @@ Production: <!-- TODO: production URL -->
 - We pulled the recipe database (#19) and the first slice of AI dish ideas (#20) forward from Sprint 3, because the course asked for the AI feature to start in Sprint 2 and Kyle had asked for a recipe database.
 - Dish ideas are one-click suggestions from our own recipes, not a chat, so they can't invent recipes and are easy to test.
 - Cancelling before the matching (#15) moved to Sprint 3, to keep the last day for production and documentation.
-- Planned for Sprint 3: matching teams when sign-ups close (#17, with #29–#34), the My Dinner page with the timed address reveal (#18), and dish ideas for the actual guests once matching exists.
+- We added a look-and-feel story (#52) after our smoke test: everything worked, but the design was very minimal. It goes at the start of Sprint 3, once Sprint 2's pull requests are merged, so it doesn't conflict with them.
+- Planned for Sprint 3: matching teams when sign-ups close (#17, with #29–#34), the My Dinner page with the timed address reveal (#18), dish ideas for the actual guests once matching exists, and the design pass (#52).
