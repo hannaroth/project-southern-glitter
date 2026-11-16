@@ -111,7 +111,7 @@ class ImportTests(TestCase):
         pie = Recipe.objects.get(external_id="2")
         self.assertEqual(pie.source_url, "https://www.themealdb.com/meal/2")
         self.assertEqual(pie.ingredients, [{"name": "Walnuts", "measure": "50g"}])
-        self.assertEqual(pie.diet_tags, ["contains_nuts"])
+        self.assertEqual(pie.diet_tags, ["vegetarian", "vegan", "contains_nuts"])
         soup = Recipe.objects.get(external_id="3")
         self.assertEqual(soup.course, "main")
         self.assertEqual(soup.diet_tags, ["vegetarian", "vegan"])
