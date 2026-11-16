@@ -119,7 +119,10 @@ class SignUpNextTests(TestCase):
         self.assertRedirects(response, self.invite, fetch_redirect_response=False)
 
     def test_outside_next_is_ignored(self):
-        for url in ["https://evil.example/", "//evil.example/", "http://evil.example/teams/"]:
+        for url in [
+            "https://evil.example/", "//evil.example/", "http://evil.example/teams/",
+            "/\\evil.example", "javascript:alert(1)",
+        ]:
             with self.subTest(url=url):
                 self.client.logout()
                 User.objects.filter(email="ada@example.com").delete()
