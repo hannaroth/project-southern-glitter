@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from dinners.tests.test_home import make
+from teams.models import Team
 
 
 class DetailPageTests(TestCase):
@@ -102,6 +103,44 @@ class JoinSectionTests(TestCase):
         response = self.client.get(self.url)
         self.assertNotContains(response, "Log in to join")
         self.assertContains(response, "Sign-ups close")
+
+    def test_user_without_team_gets_sign_up_button(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, f'href="/dinners/{self.dinner.pk}/signup/" role="button">Sign up as a team</a>')
+        self.assertNotContains(response, ">Your team</a>")
+
+    def test_user_with_active_team_gets_your_team_button(self):
+        team = Team.objects.create(dinner=self.dinner, creator=self.user, address="1 Elm St")
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.context["my_team"], team)
+        self.assertContains(response, f'href="/teams/{team.pk}/" role="button">Your team</a>')
+        self.assertNotContains(response, ">Sign up as a team</a>")
+
+    def test_partner_also_gets_your_team_button(self):
+        creator = get_user_model().objects.create_user(email="bob@example.com", password="pw-12345-long")
+        team = Team.objects.create(dinner=self.dinner, creator=creator, partner=self.user, address="1 Elm St")
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(self.url), f'href="/teams/{team.pk}/" role="button">Your team</a>')
+
+    def test_cancelled_team_does_not_count(self):
+        Team.objects.create(dinner=self.dinner, creator=self.user, address="1 Elm St", status=Team.Status.CANCELLED)
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, ">Sign up as a team</a>")
+        self.assertNotContains(response, ">Your team</a>")
+
+    def test_team_for_another_dinner_does_not_count(self):
+        other = make("Other Dinner", 12)
+        Team.objects.create(dinner=other, creator=self.user, address="1 Elm St")
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(self.url), ">Sign up as a team</a>")
+
+    def test_logged_out_visitor_gets_no_join_buttons(self):
+        response = self.client.get(self.url)
+        self.assertNotContains(response, ">Sign up as a team</a>")
+        self.assertNotContains(response, ">Your team</a>")
 
     def test_closed_signups_show_closed_and_no_login_button(self):
         self.dinner.signup_deadline = timezone.now() - timedelta(minutes=1)

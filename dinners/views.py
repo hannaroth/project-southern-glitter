@@ -2,6 +2,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import DetailView, ListView
 
+from teams.services import active_team_for
+
 from .models import Dinner
 
 
@@ -36,5 +38,6 @@ class DinnerDetailView(DetailView):
             login_url=f"{reverse('login')}?next={path}",
             is_past=dinner.date < timezone.localdate(),
             signups_closed=timezone.now() >= dinner.signup_deadline,
+            my_team=active_team_for(self.request.user, dinner),
         )
         return context

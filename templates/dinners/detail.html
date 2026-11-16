@@ -33,8 +33,12 @@
         <p>Sign-ups for this dinner are closed.</p>
       {% elif user.is_authenticated %}
         {% block join %}
-          {# Wired to "Sign up as a team" / "Your team" (teams:signup / teams:detail) once #26 is on main. #}
           <p>Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
+          {% if my_team %}
+            <a href="{% url 'teams:detail' my_team.pk %}" role="button">Your team</a>
+          {% else %}
+            <a href="{% url 'teams:signup' dinner.pk %}" role="button">Sign up as a team</a>
+          {% endif %}
         {% endblock %}
       {% else %}
         <p>Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
