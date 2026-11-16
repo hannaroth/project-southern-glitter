@@ -16,4 +16,7 @@
     {% if team.dietary_notes %}<p><strong>Other dietary needs:</strong> {{ team.dietary_notes }}</p>{% endif %}
     <p><strong>Course we'd like to host:</strong> {{ team.get_preferred_course_display }}</p>
   </article>
+  {% if team.status != "cancelled" %}
+    <p><a href="{% url 'recipes:dish_ideas' pk=dinner.pk %}" role="button">Get dish ideas</a></p>
+  {% endif %}
 {% endblock %}
