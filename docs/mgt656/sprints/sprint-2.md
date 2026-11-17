@@ -2,7 +2,7 @@
 
 **Sprint goal:** students can sign up for a dinner as a team of two on production, and hosts get their first AI dish ideas from a real recipe database.
 
-**Status:** <!-- TODO Tue: one line, e.g. "Done: all committed stories are merged and live on staging and production." -->
+**Status:** Done. Every committed story is merged, and `main` (`e0489a3`) is live on staging and on production. Production had a 500 on the home page for about 25 minutes during its first deploy (the old code ran against the already-migrated database) and recovered when the new code went live.
 
 ## What shipped
 
@@ -20,14 +20,13 @@
 Staging: https://running-dinner-staging.onrender.com
 Production: https://yale-running-dinner.onrender.com
 
-<!-- TODO Tue: keep only what the check of both sites confirmed. -->
-- Admins create and edit dinners in the admin area, with course times, the after-party and a sign-up deadline.
-- Students sign up a team for a dinner with their address, dietary restrictions and preferred course. Each person can be on one team per dinner, and sign-ups close at the deadline.
-- The team's creator shares an invite link; the team is complete when the partner accepts while logged in.
-- Once the team cap is reached, new teams join a waitlist in sign-up order.
-- Each dinner has a shareable page; logged-out visitors are asked to log in to join.
-- Signed-up teams get three dish ideas from our recipe database, each with a reason, plus a shopping list.
-- The Sprint 1 A/B test page and stats still work.
+Checked by Jason on Nov 17 (staging first, then production after its first deploy recovered):
+
+- Dinners: the home page lists the three demo dinners, and each dinner page shows course times and the share box with a copy-link button. Logged-out visitors are asked to log in to join. (staging and production)
+- Sign-up: a new account signs up a team with address, dietary restriction and preferred course, and the team page shows "Registered", the restrictions and the invite link. (staging; on production the sign-up page loads, but a full sign-up was not run)
+- Dish ideas: a vegetarian main-course team gets three dishes with reasons and a shopping list, and no "AI unavailable" notice, so the OpenRouter key works. (staging only)
+- The Sprint 1 A/B test page and its stats still work. (staging and production)
+- Merged and covered by tests, but not clicked through on the live sites: admin editing of dinners, accepting an invite as the partner, and the waitlist.
 
 ## Working with our agents
 
