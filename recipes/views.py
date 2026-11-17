@@ -106,6 +106,7 @@ def dish_ideas(request, pk):
                 ],
                 shopping_list=result.shopping_list[:MAX_SHOPPING_ITEMS],
                 notice="" if result.ai_used else result.notice,
+                vegan_course_note=bool(not result.ideas and "vegan" in restrictions and course != "main"),
                 shown_ids=shown_ids,
                 searched=True,
             )

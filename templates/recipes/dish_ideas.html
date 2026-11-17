@@ -52,6 +52,7 @@
     <p><small>Recipes from TheMealDB. {{ allergy_note }}</small></p>
   {% elif searched %}
     <p>No matching recipes found for these restrictions.</p>
+    {% if vegan_course_note %}<p>Our recipe source marks vegan dishes only among main courses, so there are no vegan starter or dessert ideas yet.</p>{% endif %}
   {% endif %}
   {% if team %}<p><a href="{% url 'teams:detail' pk=team.pk %}">Back to our team</a></p>{% endif %}
 {% endblock %}

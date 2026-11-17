@@ -354,3 +354,30 @@ class FewCandidatesNoticeTests(PageTestBase):
         chat.assert_not_called()
         self.assertContains(response, "No matching recipes found")
         self.assertNotContains(response, NOTICE)
+
+
+class VeganNoticeTests(PageTestBase):
+    def setUp(self):
+        super().setUp()
+        self.team.dietary_restrictions = ["vegan"]
+        self.team.preferred_course = "starter"
+        self.team.save()
+        for i in range(5):
+            make_recipe(i + 20, course="starter", tags=["vegetarian"])
+
+    def test_vegan_starter_host_sees_explanation(self):
+        self.login()
+        with patch("recipes.ai.chat_json") as chat:
+            response = self.client.post(self.url, {"suggest": "1"})
+        chat.assert_not_called()
+        self.assertContains(response, "No matching recipes found for these restrictions.")
+        self.assertContains(response, "marks vegan dishes only among main courses")
+
+    def test_vegan_main_host_gets_no_extra_line(self):
+        self.team.preferred_course = "main"
+        self.team.save()
+        Recipe.objects.all().delete()
+        self.login()
+        response = self.client.post(self.url, {"suggest": "1"})
+        self.assertContains(response, "No matching recipes found")
+        self.assertNotContains(response, "marks vegan dishes only")
