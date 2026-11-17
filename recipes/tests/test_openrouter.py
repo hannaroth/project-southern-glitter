@@ -1,5 +1,7 @@
 import json
 import os
+import threading
+import time
 import urllib.error
 from unittest.mock import MagicMock, patch
 
@@ -104,3 +106,39 @@ class ChatJsonTests(SimpleTestCase):
             with self.assertRaises(OpenRouterError) as ctx:
                 chat_json([])
         self.assertNotIn("secret-key-123", str(ctx.exception))
+
+
+class DeadlineTests(SimpleTestCase):
+    def test_hanging_request_hits_wall_clock_deadline(self):
+        release = threading.Event()
+        self.addCleanup(release.set)
+
+        def hanging(request, timeout=None):
+            release.wait(5)
+            raise OSError("released")
+
+        with env(OPENROUTER_API_KEY="secret-key-123"), patch("urllib.request.urlopen", hanging):
+            started = time.monotonic()
+            with self.assertRaises(OpenRouterError) as ctx:
+                chat_json([{"role": "user", "content": "x"}], timeout=0.3)
+        self.assertLess(time.monotonic() - started, 1.5)
+        self.assertNotIsInstance(ctx.exception, InvalidJSONReply)
+        self.assertIn("timed out", str(ctx.exception))
+        self.assertNotIn("secret-key-123", str(ctx.exception))
+
+    def test_slow_but_in_time_request_succeeds(self):
+        def slowish(request, timeout=None):
+            time.sleep(0.2)
+            return fake_response('{"ok": true}')
+
+        with env(OPENROUTER_API_KEY="k"), patch("urllib.request.urlopen", slowish):
+            result = chat_json([], timeout=0.5)
+        self.assertEqual(result, {"ok": True})
+
+    def test_error_from_worker_thread_is_mapped(self):
+        with env(OPENROUTER_API_KEY="secret-key-123"), patch(
+            "urllib.request.urlopen", side_effect=urllib.error.URLError("dns failed secret-key-123")
+        ):
+            with self.assertRaises(OpenRouterError) as ctx:
+                chat_json([])
+        self.assertEqual(str(ctx.exception), "OpenRouter request failed: URLError")

@@ -2,6 +2,7 @@
 
 import json
 import os
+import threading
 import urllib.error
 import urllib.request
 
@@ -22,10 +23,27 @@ class MissingAPIKey(OpenRouterError):
     """OPENROUTER_API_KEY is not set."""
 
 
+def _fetch(request, timeout, out):
+    """Run the HTTP call in a worker thread and hand the result back through `out`.
+
+    `out` is a fresh dict per call, so a thread that outlives its deadline can only write
+    into a dict nobody reads any more. We catch Exception, not BaseException: KeyboardInterrupt
+    and SystemExit are not network errors and must not be swallowed. (Signals reach the main
+    thread anyway; in a daemon thread they would only be lost.) urlopen is looked up through
+    the module on every call so tests can patch it.
+    """
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            out["body"] = response.read()
+    except Exception as exc:
+        out["error"] = exc
+
+
 def chat_json(messages, *, model=None, timeout=None):
     """Send chat messages and return the reply content parsed as a JSON object (dict).
 
-    `timeout` is in seconds; None means TIMEOUT_SECONDS.
+    `timeout` is in seconds; None means TIMEOUT_SECONDS. It is a hard wall-clock deadline for
+    the whole request (DNS, connect, TLS, body), enforced by joining a worker thread.
     """
     api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not api_key:
@@ -47,9 +65,18 @@ def chat_json(messages, *, model=None, timeout=None):
             "Content-Type": "application/json",
         },
     )
+    deadline = TIMEOUT_SECONDS if timeout is None else timeout
+    out = {}
+    worker = threading.Thread(target=_fetch, args=(request, deadline, out), daemon=True)
+    worker.start()
+    worker.join(deadline)
+    if worker.is_alive():
+        # Plain OpenRouterError (not InvalidJSONReply): the caller falls back without a retry.
+        raise OpenRouterError("OpenRouter request timed out")
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS if timeout is None else timeout) as response:
-            payload = json.loads(response.read().decode("utf-8"))
+        if "error" in out:
+            raise out["error"]
+        payload = json.loads(out["body"].decode("utf-8"))
         content = payload["choices"][0]["message"]["content"]
     except urllib.error.HTTPError as exc:
         raise OpenRouterError(f"OpenRouter returned HTTP {exc.code}") from exc

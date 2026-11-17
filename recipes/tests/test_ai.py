@@ -1,4 +1,6 @@
 import json
+import threading
+import time
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -315,3 +317,38 @@ class TimeBudgetTests(TestCase):
         result, chat = self.run_with_clock([0, 0, 20], [InvalidJSONReply("bad"), {"oops": 1}])
         self.assertEqual(chat.call_count, 2)
         self.assertEqual(chat.call_args_list[1].kwargs["timeout"], 5)
+
+
+class HardDeadlineTests(TestCase):
+    def setUp(self):
+        for i in range(5):
+            make(i)
+
+    def test_timeout_error_falls_back_without_retry(self):
+        err = OpenRouterError("OpenRouter request timed out")
+        with patch("recipes.ai.chat_json", side_effect=err) as chat:
+            result = call()
+        self.assertEqual(chat.call_count, 1)
+        self.assertFalse(result.ai_used)
+        self.assertEqual(result.notice, NOTICE)
+        self.assertEqual(len(result.ideas), 3)
+
+    def test_hanging_connection_ends_in_fallback_within_budget(self):
+        release = threading.Event()
+        self.addCleanup(release.set)
+
+        def hanging(request, timeout=None):
+            release.wait(5)
+            raise OSError("released")
+
+        with patch.object(ai, "TOTAL_BUDGET_SECONDS", 0.6), patch.object(
+            ai, "MIN_RETRY_SECONDS", 0.2
+        ), patch.object(ai, "TIMEOUT_SECONDS", 0.4), patch.dict(
+            "os.environ", {"OPENROUTER_API_KEY": "k"}
+        ), patch("urllib.request.urlopen", hanging):
+            started = time.monotonic()
+            result = call()
+        self.assertLess(time.monotonic() - started, 1.5)
+        self.assertFalse(result.ai_used)
+        self.assertEqual(result.notice, NOTICE)
+        self.assertEqual(len(result.ideas), 3)
