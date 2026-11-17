@@ -7,7 +7,7 @@ This file is updated every sprint. Each item says what it is, where the code liv
 | # | Item | Course category | Status (Sprint 2) |
 |---|---|---|---|
 | 1 | CI: tests and linting on every pull request, merge blocked on failure | Delivery | Done |
-| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Done (workflow merged, PR #55) |
+| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Done (PR #55); production live since Nov 17 |
 | 3 | Importing external data: recipes from TheMealDB | Backend | Done |
 | 4 | Structured LLM output that drives app behavior: AI dish ideas | AI | Done (PR #49, merged) |
 
@@ -48,7 +48,9 @@ It then fast-forwards `production` to it, never with a force-push. Render notice
 
 **Files.** `.github/workflows/promote.yml`, `scripts/promote.sh` (the git checks and the push), `build.sh`, and the README section "Deploying to production".
 
-**Pull requests.** #55 (issue #16), merged Nov 16. The Render services, Neon databases and environment variables are dashboard work with no pull request (#16).
+**Pull requests.** #55 (issue #16), merged Nov 16. The Render services, Neon databases and environment variables are dashboard work with no pull request (#16). First promotion: Nov 17, `44089c7` → `e0489a3` ([run](https://github.com/hannaroth/project-southern-glitter/actions/runs/44132692673)).
+
+**Lesson from the first promotion.** `build.sh` runs `migrate` before Render switches to the new code. So for the roughly 25 minutes that the first build spent importing recipes into the empty production database, the old code was serving against the new schema, and the home page returned 500. It fixed itself once the new code went live. Future builds skip the import (`--if-empty`) and finish in a few minutes, but any rename or removal of a column has the same window; a pre-deploy step or a two-step migration would close it.
 
 **How to see it working.**
 - Merge any pull request: within minutes staging shows the change.
