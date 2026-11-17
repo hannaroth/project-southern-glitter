@@ -1,0 +1,45 @@
+# Sprint 2: sign-up, production and a first AI feature
+
+**Sprint goal:** students can sign up for a dinner as a team of two on production, and hosts get their first AI dish ideas from a real recipe database.
+
+**Status:** Done. Every committed story is merged, and `main` (`e0489a3`) is live on staging and on production. Production had a 500 on the home page for about 25 minutes during its first deploy (the old code ran against the already-migrated database) and recovered when the new code went live.
+
+## What shipped
+
+- Admins create and edit dinners: #12, PR #44
+- Sign up for a dinner as a team of two: #13, made of the sign-up form #26 (PR #48), the partner invite link #27 (PR #50) and the waitlist #28 (PR #57)
+- Share a dinner: #14, PR #56
+- Sign-up keeps the page you came from, so a new partner lands back on the invite: #53, PR #54 (found while building #27)
+- Production environment: #16. A separate Render service and Neon database (set up directly on Render; no pull request), and a "Promote to production" workflow that moves a tested `main` commit to production (PR #55; production URL in the README, PR #59)
+- Recipe database imported from TheMealDB: #19, PR #47
+- AI dish ideas, first slice: #20, PR #49 (merged Tue after three review rounds: invalid-JSON retry, diet tags derived from ingredients so a vegetarian team still gets starter and dessert ideas, and a hard 25 s wall-clock limit so the fallback shows before the 30 s server timeout)
+- Also: the Sprint 2 plan and decisions (PR #41), Claude Code subagents and team commands (PR #45), and the first version of `technical.md` (#43, PR #58)
+
+## What works on staging and production now
+
+Staging: https://running-dinner-staging.onrender.com
+Production: https://yale-running-dinner.onrender.com
+
+Checked by Jason on Nov 17 (staging first, then production after its first deploy recovered):
+
+- Dinners: the home page lists the three demo dinners, and each dinner page shows course times and the share box with a copy-link button. Logged-out visitors are asked to log in to join. (staging and production)
+- Sign-up: a new account signs up a team with address, dietary restriction and preferred course, and the team page shows "Registered", the restrictions and the invite link. (staging; on production the sign-up page loads, but a full sign-up was not run)
+- Dish ideas: a vegetarian main-course team gets three dishes with reasons and a shopping list, and no "AI unavailable" notice, so the OpenRouter key works. (staging only)
+- The Sprint 1 A/B test page and its stats still work. (staging and production)
+- Merged and covered by tests, but not clicked through on the live sites: admin editing of dinners, accepting an invite as the partner, and the waitlist.
+
+## Working with our agents
+
+<!-- One concrete thing per person: what worked or didn't, and what you changed. -->
+- **Nicola:** Running Claude Code locally needed a one-time 15-minute setup (Homebrew, gh, Python 3.13, Postgres 16). After that, an Opus coordinator with a Sonnet builder and an independent verifier subagent shipped #26 with 142 green tests in about 7 minutes. Lesson: give the agent the environment details up front, and always have a second agent verify.
+- **Jason:** Before asking for review on #28 (Waitlist), my agent test-merged the branch against the pull requests it depends on and found it would conflict with #27's invite code in two files. Instead of leaving the reviewer to untangle that at merge time, we merged #27 into my branch and resolved it there, re-ran all 216 tests, and said so in the PR. Lesson: check a branch against the open pull requests it builds on, not just against `main`, before asking for review.
+- **Hanna:** Two verifier agents on my side passed #49 (AI dish ideas) with no blockers, but Nicola's review, also run with Claude Code, found that invalid JSON from the AI wasn't retried as contract 5.5 requires; we fixed it within the hour and the reviewer approved. Lesson: a second, independent review against the contract catches what the builder's own checks miss, even when both are agents.
+
+## Backlog changes for Sprint 3
+
+- We pulled the recipe database (#19) and the first slice of AI dish ideas (#20) forward from Sprint 3, because the course asked for the AI feature to start in Sprint 2 and Kyle had asked for a recipe database.
+- Dish ideas are one-click suggestions from our own recipes, not a chat, so they can't invent recipes and are easy to test.
+- Cancelling before the matching (#15) moved to Sprint 3, to keep the last day for production and documentation.
+- We added a look-and-feel story (#52) after our smoke test: everything worked, but the design was very minimal. It goes at the start of Sprint 3, once Sprint 2's pull requests are merged, so it doesn't conflict with them.
+- We found TheMealDB's recipes are often adapted rather than authentic (its carbonara uses bacon). After talking to Kyle on Nov 16, #61 for Sprint 3 gets real recipes from a good recipe site through the Wayback Machine's CDX API instead of crawling. It stores the ingredients and a link to the source, keeps an open question on copyright for Sprint 3 planning, and falls back to an AI-generated set and TheMealDB. For Sprint 4, #62 lets dish ideas generate and save a new recipe only when nothing in our database fits, visible only to the requester until an admin shares it, with a per-user limit. We decided against scraping recipe sites (their terms forbid it) and against reviewing every recipe by hand (too much time).
+- Planned for Sprint 3: matching teams when sign-ups close (#17, with #29–#34), the My Dinner page with the timed address reveal (#18), dish ideas for the actual guests once matching exists, the design pass (#52) and the better recipe source (#61).
