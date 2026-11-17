@@ -7,9 +7,9 @@ This file is updated every sprint. Each item says what it is, where the code liv
 | # | Item | Course category | Status (Sprint 2) |
 |---|---|---|---|
 | 1 | CI: tests and linting on every pull request, merge blocked on failure | Delivery | Done |
-| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Done (workflow merged, PR #55) |
+| 2 | CD: `main` deploys staging automatically; a deliberate step promotes to production | Delivery | Done (PR #55); production live since Nov 17 |
 | 3 | Importing external data: recipes from TheMealDB | Backend | Done |
-| 4 | Structured LLM output that drives app behavior: AI dish ideas | AI | In review (PR #49, approved, waits on #48) |
+| 4 | Structured LLM output that drives app behavior: AI dish ideas | AI | Done (PR #49, merged) |
 
 ## 1. CI: tests and linting on every pull request, merge blocked on failure
 
@@ -48,7 +48,9 @@ It then fast-forwards `production` to it, never with a force-push. Render notice
 
 **Files.** `.github/workflows/promote.yml`, `scripts/promote.sh` (the git checks and the push), `build.sh`, and the README section "Deploying to production".
 
-**Pull requests.** #55 (issue #16), merged Nov 16. The Render services, Neon databases and environment variables are dashboard work with no pull request (#16).
+**Pull requests.** #55 (issue #16), merged Nov 16. The Render services, Neon databases and environment variables are dashboard work with no pull request (#16). First promotion: Nov 17, `44089c7` → `e0489a3` ([run](https://github.com/hannaroth/project-southern-glitter/actions/runs/44132692673)).
+
+**Lesson from the first promotion.** `build.sh` runs `migrate` before Render switches to the new code. So for the roughly 25 minutes that the first build spent importing recipes into the empty production database, the old code was serving against the new schema, and the home page returned 500. It fixed itself once the new code went live. Future builds skip the import (`--if-empty`) and finish in a few minutes, but any rename or removal of a column has the same window; a pre-deploy step or a two-step migration would close it.
 
 **How to see it working.**
 - Merge any pull request: within minutes staging shows the change.
@@ -91,13 +93,13 @@ Rows are matched by TheMealDB's id, so running the import twice updates rather t
 3. **The app validates that reply before using it.** It cannot invent a recipe or ignore a restriction, because anything outside the candidate list is rejected.
 4. **Privacy:** the prompt contains only the theme, course, restriction keys, an optional short wish, and the candidates. No names, emails or addresses are ever sent.
 
-**Files (in PR #49).** `recipes/openrouter.py` (the HTTP call, 20-second timeout, key from `OPENROUTER_API_KEY`), `recipes/ai.py` (candidates, prompt, validation, fallback), `recipes/views.py`, `recipes/urls.py`, `templates/recipes/dish_ideas.html`, and the tests `recipes/tests/test_ai.py`, `recipes/tests/test_openrouter.py` and `recipes/tests/test_dish_ideas_page.py`.
+**Files.** `recipes/openrouter.py` (the HTTP call, 20-second timeout, key from `OPENROUTER_API_KEY`), `recipes/ai.py` (candidates, prompt, validation, fallback), `recipes/views.py`, `recipes/urls.py`, `templates/recipes/dish_ideas.html`, and the tests `recipes/tests/test_ai.py`, `recipes/tests/test_openrouter.py` and `recipes/tests/test_dish_ideas_page.py`.
 
-**Pull requests.** #49 (issue #20), approved; it merges after #48, whose team pages it builds on.
+**Pull requests.** #49 (issue #20), merged Nov 17.
 
 **How to see it working.** Once merged: log in, sign up a team for a dinner, open your team page, click **Get dish ideas** (`/dinners/<pk>/dish-ideas/`), then **Suggest dishes**. The page needs login and team membership; anyone else gets 403.
 
-**Failure handling.** An invalid reply (bad JSON, wrong count, an id outside the candidates) is retried once. After that, and whenever the key is missing or OpenRouter errors or times out, the page shows three matching recipes chosen by our code, labelled "AI unavailable, here are matching recipes". The page always works.
+**Failure handling.** An invalid reply (bad JSON, wrong count, an id outside the candidates) is retried once. Each call has a 20-second timeout, and both attempts together are capped at 25 seconds, so a slow AI can't hit the server's 30-second limit. After that, and whenever the key is missing or OpenRouter errors or times out, the page shows three matching recipes chosen by our code, labelled "AI unavailable, here are matching recipes". The page always works.
 
 **Next steps (Sprints 3 and 4).**
 - Use the restrictions of the actual guests after matching.
@@ -110,17 +112,17 @@ Rows are matched by TheMealDB's id, so running the import twice updates rather t
 
 **What we test, at which level.**
 
-| Level | On `main` now | In open pull requests (in review) | Tools |
-|---|---|---|---|
-| Business rules as plain functions | the A/B "preferred" calculation; course mapping and diet tags (`recipes/tests/test_diet.py`) | waitlist status and position (#57); who may accept an invite (#50); sign-ups open or closed (#48) | Django `TestCase` |
-| Models and migrations | `Dinner` validation: course times in order, deadline before the dinner (`dinners/tests/test_dinner_fields.py`); every model change has a migration (CI) | the `Team` model (#48) | `TestCase`, `makemigrations --check` |
-| Pages and permissions | login redirects with `?next=` (`accounts/tests`, `dinners/tests/test_detail.py`); who can open the admin; A/B impressions and clicks counted once per visitor, and the A/B click still counted with CSRF enforced (`abtest/tests`) | who can see a team's address and one team per person per dinner (#48); CSRF and allowed methods on the invite accept (#50); the dish-ideas page's permissions (#49) | Django test client |
-| Management commands | `seed` creates the grader accounts and is safe to run twice; `import_recipes` with fake HTTP responses, including failures | | `call_command` |
-| By hand, before each review | a click-through in a real browser, sometimes at phone size; for the A/B page, a scripted run of 200 fresh visitors against gunicorn and Postgres, described in PR #35 | | browser |
+| Level | Examples | Tools |
+|---|---|---|
+| Business rules as plain functions | waitlist status and position (`teams/tests/test_waitlist.py`); who may accept an invite (`teams/tests/test_invite.py`); sign-ups open or closed (`teams/tests/test_signup.py`); course mapping and diet tags (`recipes/tests/test_diet.py`); choosing and validating AI dish ideas (`recipes/tests/test_ai.py`); the A/B "preferred" calculation | Django `TestCase` |
+| Models and migrations | `Dinner` validation: course times in order, deadline before the dinner (`dinners/tests/test_dinner_fields.py`); the `Team` model (`teams/tests/test_models.py`); every model change has a migration (CI) | `TestCase`, `makemigrations --check` |
+| Pages and permissions | login redirects with `?next=` (`accounts/tests`, `dinners/tests/test_detail.py`); who can open the admin; who can see a team's address and one team per person per dinner (`teams/tests/test_signup.py`); CSRF and allowed methods on the invite accept (`teams/tests/test_invite.py`); the dish-ideas page's permissions (`recipes/tests/test_dish_ideas_page.py`); A/B impressions and clicks counted once per visitor, and the A/B click still counted with CSRF enforced (`abtest/tests`) | Django test client |
+| Management commands | `seed` creates the grader accounts and is safe to run twice; `import_recipes` with fake HTTP responses, including failures | `call_command` |
+| By hand, before each review | a click-through in a real browser, sometimes at phone size; for the A/B page, a scripted run of 200 fresh visitors against gunicorn and Postgres, described in PR #35 | browser |
 
 **What we mock, and why.**
 - **TheMealDB:** `urllib.request.urlopen` is patched with canned responses, including network errors, empty results and bad JSON; the tests also check the 10-second timeout is passed, and set the pause between requests to 0.
-- **OpenRouter (PR #49):** `chat_json` is patched to return valid, invalid and failing replies, so tests cover the retry and the fallback, and check that no personal data is in the prompt.
+- **OpenRouter:** `chat_json` is patched to return valid, invalid and failing replies, so tests cover the retry and the fallback, and check that no personal data is in the prompt.
 - **Randomness:** the A/B 50/50 choice (`random.choice`), so tests are repeatable.
 - **Time:** tests on `main` build dates relative to today, so they never go stale; #48's tests also patch `timezone.now` to test the exact deadline moment.
 
