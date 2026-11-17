@@ -50,4 +50,7 @@
       {% endif %}
     </article>
   {% endif %}
+  {% if team.status != "cancelled" %}{% if user.is_authenticated and user.pk == team.creator_id or user.is_authenticated and user.pk == team.partner_id %}
+    <p><a href="{% url 'recipes:dish_ideas' pk=dinner.pk %}" role="button">Get dish ideas</a></p>
+  {% endif %}{% endif %}
 {% endblock %}
