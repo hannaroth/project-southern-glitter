@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Dish ideas · {{ dinner.title }}{% endblock %}
+{% block content %}
+  <h1>Dish ideas</h1>
+  <article>
+    <p><strong>{{ dinner.title }}</strong></p>
+    <p><strong>Course:</strong> {% if course_label %}{{ course_label }}{% else %}pick one below{% endif %}</p>
+    <p><strong>Theme:</strong> {{ dinner.theme }}</p>
+    <p><strong>Guests' dietary restrictions:</strong>
+      {% for label in restriction_labels %}{{ label }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}
+    </p>
+    <p><small>All teams signed up for this dinner are included until guests are matched.</small></p>
+  </article>
+
+  <form method="post">
+    {% csrf_token %}
+    {% if ask_course %}
+      <label>{{ form.course.label }}
+        {{ form.course }}
+      </label>
+      {% for error in form.course.errors %}<p><small role="alert">{{ error }}</small></p>{% endfor %}
+    {% endif %}
+    <label>{{ form.wish.label }}
+      {{ form.wish }}
+    </label>
+    {% for error in form.wish.errors %}<p><small role="alert">{{ error }}</small></p>{% endfor %}
+    {{ form.shown_ids }}
+    <div class="grid">
+      <button type="submit" name="suggest" value="1">Suggest dishes</button>
+      {% if ideas %}<button type="submit" name="others" value="1" class="secondary">Suggest others</button>{% endif %}
+    </div>
+  </form>
+
+  {% if notice %}<article role="status"><p>{{ notice }}</p></article>{% endif %}
+
+  {% if ideas %}
+    <h2>Three ideas</h2>
+    {% for idea in ideas %}
+      <article>
+        <h3>{{ idea.recipe.title }}</h3>
+        {% if idea.why %}<p>{{ idea.why }}</p>{% endif %}
+        {% if idea.recipe.cuisine %}<p><small>Cuisine: {{ idea.recipe.cuisine }}</small></p>{% endif %}
+        {% if idea.url %}<p><a href="{{ idea.url }}" target="_blank" rel="noopener noreferrer">Recipe</a></p>{% endif %}
+      </article>
+    {% endfor %}
+    <h2>Shopping list</h2>
+    {% if shopping_list %}
+      <ul>{% for item in shopping_list %}<li>{{ item }}</li>{% endfor %}</ul>
+    {% else %}
+      <p>Nothing to buy.</p>
+    {% endif %}
+    <p><small>Recipes from TheMealDB. {{ allergy_note }}</small></p>
+  {% elif searched %}
+    <p>No matching recipes found for these restrictions.</p>
+    {% if vegan_course_note %}<p>Our recipe source marks vegan dishes only among main courses, so there are no vegan starter or dessert ideas yet.</p>{% endif %}
+  {% endif %}
+  {% if team %}<p><a href="{% url 'teams:detail' pk=team.pk %}">Back to our team</a></p>{% endif %}
+{% endblock %}

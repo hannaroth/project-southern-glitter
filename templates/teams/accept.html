@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Join a team · {{ dinner.title }}{% endblock %}
+{% block content %}
+  <h1>Join a team</h1>
+  <p><strong>{{ dinner.title }}</strong> · {{ dinner.date|date:"D, M j, Y" }}</p>
+  {% if refusal %}
+    <article role="alert">
+      <p>{{ refusal }}</p>
+      {% if own_team %}<p><a href="{% url 'teams:detail' own_team.pk %}">Go to your team</a></p>{% endif %}
+    </article>
+  {% else %}
+    <p>{{ team.creator.display_name }} invited you to be their partner for this dinner.
+      Sign-ups close {{ dinner.signup_deadline|date:"D, M j, g:i A" }}.</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Join {{ team.creator.display_name }}'s team</button>
+    </form>
+  {% endif %}
+{% endblock %}

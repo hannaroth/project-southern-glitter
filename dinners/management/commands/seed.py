@@ -7,7 +7,7 @@ to a new upcoming date once theirs has passed. Nothing is duplicated.
 """
 
 import os
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
@@ -35,12 +35,22 @@ ACCOUNTS = [
     },
 ]
 
-# (title, theme, after-party place, team cap, days after the first dinner date)
+# (title, theme, after-party name, after-party address, team cap, days after the first dinner date)
 DINNERS = [
-    ("Around the World", "Each course from a different country", "After-party: to be announced downtown", 12, 0),
-    ("Through the Eras", "Each course from a different decade", "Student lounge (demo)", 12, 14),
-    ("No Theme, Just Dinner", "Cook whatever you love", "After-party: place to be announced", 9, 28),
+    ("Around the World", "Each course from a different country", "To be announced downtown", "100 Demo Street, New Haven, CT 06510", 12, 0),
+    ("Through the Eras", "Each course from a different decade", "Student lounge (demo)", "200 Example Avenue, New Haven, CT 06511", 12, 14),
+    ("No Theme, Just Dinner", "Cook whatever you love", "Place to be announced", "300 Sample Road, New Haven, CT 06520", 9, 28),
 ]
+
+STARTER_TIME = time(18, 0)
+MAIN_TIME = time(19, 30)
+DESSERT_TIME = time(21, 0)
+
+
+def signup_deadline_for(dinner_date):
+    """Two days before the dinner at 23:59 project time (America/New_York)."""
+    day = dinner_date - timedelta(days=2)
+    return timezone.make_aware(datetime.combine(day, time(23, 59)))
 
 
 def first_dinner_date(today):
@@ -64,8 +74,8 @@ class Command(BaseCommand):
             for account in ACCOUNTS:
                 self.seed_user(account, passwords[account["env"]])
             base = first_dinner_date(timezone.localdate())
-            for title, theme, place, cap, offset in DINNERS:
-                self.seed_dinner(title, theme, place, cap, base + timedelta(days=offset))
+            for title, theme, name, address, cap, offset in DINNERS:
+                self.seed_dinner(title, theme, name, address, cap, base + timedelta(days=offset))
 
     def seed_user(self, account, password):
         User = get_user_model()
@@ -87,21 +97,39 @@ class Command(BaseCommand):
             user.save()
         self.stdout.write(f"{account['email']}: {'updated' if changed else 'unchanged'}")
 
-    def seed_dinner(self, title, theme, place, cap, new_date):
+    def seed_dinner(self, title, theme, name, address, cap, new_date):
         dinner = Dinner.objects.filter(title=title).order_by("pk").first()
         if dinner is None:
             Dinner.objects.create(
-                title=title, theme=theme, after_party_place=place, team_cap=cap, date=new_date
+                title=title,
+                theme=theme,
+                date=new_date,
+                starter_time=STARTER_TIME,
+                main_time=MAIN_TIME,
+                dessert_time=DESSERT_TIME,
+                after_party_name=name,
+                after_party_address=address,
+                team_cap=cap,
+                signup_deadline=signup_deadline_for(new_date),
             )
             self.stdout.write(f"{title}: created")
             return
-        values = {"theme": theme, "after_party_place": place, "team_cap": cap}
+        values = {
+            "theme": theme,
+            "starter_time": STARTER_TIME,
+            "main_time": MAIN_TIME,
+            "dessert_time": DESSERT_TIME,
+            "after_party_name": name,
+            "after_party_address": address,
+            "team_cap": cap,
+        }
         if dinner.date < timezone.localdate():
             values["date"] = new_date
+        values["signup_deadline"] = signup_deadline_for(values.get("date", dinner.date))
         changed = False
-        for name, value in values.items():
-            if getattr(dinner, name) != value:
-                setattr(dinner, name, value)
+        for field, value in values.items():
+            if getattr(dinner, field) != value:
+                setattr(dinner, field, value)
                 changed = True
         if changed:
             dinner.save()
