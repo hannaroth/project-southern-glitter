@@ -6,14 +6,13 @@
 
 ## What shipped
 
-<!-- TODO Tue: keep only what is merged, and fill in the missing pull request numbers. -->
 - Admins create and edit dinners: #12, PR #44
 - Sign up for a dinner as a team of two: #13, made of the sign-up form #26 (PR #48), the partner invite link #27 (PR #50) and the waitlist #28 (PR #57)
 - Share a dinner: #14, PR #56
 - Sign-up keeps the page you came from, so a new partner lands back on the invite: #53, PR #54 (found while building #27)
 - Production environment: #16. A separate Render service and Neon database (set up directly on Render; no pull request), and a "Promote to production" workflow that moves a tested `main` commit to production (PR #55; production URL in the README, PR #59)
 - Recipe database imported from TheMealDB: #19, PR #47
-- AI dish ideas, first slice: #20, PR #49
+- AI dish ideas, first slice: #20, PR #49 (merged Tue after three review rounds: invalid-JSON retry, diet tags derived from ingredients so a vegetarian team still gets starter and dessert ideas, and a hard 25 s wall-clock limit so the fallback shows before the 30 s server timeout)
 - Also: the Sprint 2 plan and decisions (PR #41), Claude Code subagents and team commands (PR #45), and the first version of `technical.md` (#43, PR #58)
 
 ## What works on staging and production now
